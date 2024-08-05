@@ -400,6 +400,7 @@ impl Localizator {
     }
 }
 
+#[derive(Clone)]
 pub enum LinePlaceholder {
     SenderAliasName,
     SenderAliasId,
