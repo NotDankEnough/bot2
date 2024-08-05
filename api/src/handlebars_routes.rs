@@ -358,7 +358,7 @@ pub async fn search(
         "query": query.query,
         "results_found": results_count != 0,
         "results_count": results_count,
-        "channels_found": channels.len() != 0,
+        "channels_found": !channels.is_empty(),
         "channels_count": channels.len(),
         "channels": channels,
         "contact_name": contact_name,
