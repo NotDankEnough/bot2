@@ -29,6 +29,9 @@ POSTGRES_HOSTNAME=db
 
 BOT_USERNAME=YYYYYY
 BOT_PASSWORD=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# if you want github features
+GITHUB_API_TOKEN=ghp_XXXXXXXXXXXXXXXX
 ```
 
 > You must generate an OAuth2 password from [TwitchTokenGenerator with special scopes](https://twitchtokengenerator.com/quick/riIPG7o2Fd) for bot, because this password is used not only for chat communication, but also for commands that use Twitch API endpoints that can only be accessed with special permissions *(for example, !massping requires moderator:read:chatters)*.

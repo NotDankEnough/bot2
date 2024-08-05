@@ -15,6 +15,7 @@ forsen changed the title from **Just Chatting** to **PUBG**).
 + title `({0} - previous title, {1} - new title)`
 + category `({0} - previous game, {1} - new game)`
 + message `({0} - sender name, {1} - channel name, {2} - message)`
++ github `({0} - repository name, {1} - committer name, {2} - SHA, {3} - commit message)`
 + custom
 
 ## Event flags

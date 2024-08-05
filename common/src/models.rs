@@ -167,6 +167,7 @@ pub enum EventType {
     Title,
     Category,
     Message,
+    Github,
     Custom,
 }
 
@@ -179,6 +180,7 @@ impl FromStr for EventType {
             "title" => Ok(Self::Title),
             "category" => Ok(Self::Category),
             "message" => Ok(Self::Message),
+            "github" => Ok(Self::Github),
             _ => Ok(Self::Custom),
         }
     }
@@ -192,6 +194,7 @@ impl ToString for EventType {
             Self::Title => "title",
             Self::Category => "category",
             Self::Message => "message",
+            Self::Github => "github",
             Self::Custom => "custom",
         };
 

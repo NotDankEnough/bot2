@@ -1,10 +1,11 @@
-use std::{collections::HashSet, str::FromStr};
+use std::{collections::HashSet, env, str::FromStr};
 
 use async_trait::async_trait;
 use diesel::{
     delete, insert_into, update, BelongingToDsl, ExpressionMethods, QueryDsl, RunQueryDsl,
 };
 use eyre::Result;
+use reqwest::StatusCode;
 use twitch_api::{
     helix::chat::GetChattersRequest,
     types::{NicknameRef, UserId},
@@ -92,6 +93,13 @@ impl Command for EventCommand {
             None => return Err(ResponseError::NotEnoughArguments(CommandArgument::Target)),
         };
 
+        if event_type == EventType::Github && env::var("GITHUB_API_TOKEN").is_err() {
+            log::warn!(
+                "Tried to run the !event command, but GITHUB_API_TOKEN is not set in the .env file"
+            );
+            return Err(ResponseError::SomethingWentWrong);
+        }
+
         let target_id = match instance_bundle
             .twitch_api_client
             .get_user_from_login(
@@ -106,7 +114,7 @@ impl Command for EventCommand {
 
         let name_and_type = format!("{}:{}", target_name, event_type.to_string());
 
-        if target_id == -1 && event_type != EventType::Custom {
+        if target_id == -1 && event_type != EventType::Custom && event_type != EventType::Github {
             return Err(ResponseError::NotFound(target_name));
         }
 
@@ -117,7 +125,7 @@ impl Command for EventCommand {
             .expect("Failed to load events");
 
         let event = events.iter().find(|x| {
-            if x.event_type == EventType::Custom {
+            if x.event_type == EventType::Custom || x.event_type == EventType::Github {
                 x.custom_alias_id.as_ref().unwrap().eq(&target_name)
             } else {
                 x.target_alias_id.as_ref().unwrap().eq(&target_id)
@@ -197,15 +205,52 @@ impl Command for EventCommand {
                     return Err(ResponseError::NotEnoughArguments(CommandArgument::Message));
                 }
 
+                if event_type == EventType::Github {
+                    let url = format!("https://api.github.com/repos/{}", target_name);
+                    let reqwest_client = reqwest::Client::new();
+                    let github_token = env::var("GITHUB_API_TOKEN").unwrap();
+
+                    let response = reqwest_client
+                        .get(url)
+                        .header("Accept", "application/vnd.github+json")
+                        .header("Authorization", format!("Bearer {}", github_token))
+                        .header("X-GitHub-Api-Version", "2022-11-28")
+                        .header(
+                            "User-Agent",
+                            format!(
+                                "{} - Twitch bot - https://github.com/ilotterytea/bot",
+                                env::var("BOT_USERNAME").unwrap()
+                            ),
+                        )
+                        .send()
+                        .await;
+
+                    match response {
+                        Ok(response) => {
+                            if response.status() != StatusCode::OK {
+                                return Err(ResponseError::NotFound(target_name));
+                            }
+                        }
+                        Err(e) => {
+                            log::warn!("Error occurred while running !event command: {}", e);
+                            return Err(ResponseError::SomethingWentWrong);
+                        }
+                    }
+                }
+
                 insert_into(ev::events)
                     .values([NewEvent {
                         channel_id: request.channel.id,
-                        target_alias_id: if event_type != EventType::Custom {
+                        target_alias_id: if event_type != EventType::Custom
+                            && event_type != EventType::Github
+                        {
                             Some(target_id)
                         } else {
                             None
                         },
-                        custom_alias_id: if event_type == EventType::Custom {
+                        custom_alias_id: if event_type == EventType::Custom
+                            || event_type == EventType::Github
+                        {
                             Some(target_name.clone())
                         } else {
                             None
@@ -216,7 +261,10 @@ impl Command for EventCommand {
                     .execute(conn)
                     .expect("Failed to create a new event");
 
-                if event_type != EventType::Custom && target_id != -1 {
+                if event_type != EventType::Custom
+                    && event_type != EventType::Github
+                    && target_id != -1
+                {
                     let mut ids = instance_bundle
                         .twitch_livestream_websocket_data
                         .lock()

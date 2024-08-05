@@ -18,6 +18,7 @@ use diesel::{
     insert_into, update, Connection, ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl,
 };
 use eyre::Context;
+use github::GithubCommitsHelper;
 use livestream::TwitchLivestreamHelper;
 use log::{debug, error, info};
 use reqwest::Client;
@@ -34,6 +35,7 @@ use twitch_irc::{
 };
 
 mod commands;
+mod github;
 mod handlers;
 mod instance_bundle;
 mod livestream;
@@ -232,6 +234,12 @@ async fn main() {
         seventv_client.run().await.unwrap();
     });
 
+    let mut github_client = GithubCommitsHelper::new(instances.clone());
+
+    let github_thread = tokio::spawn(async move {
+        github_client.run().await;
+    });
+
     let irc_thread = tokio::spawn(async move {
         while let Some(irc_message) = irc_incoming_messages.recv().await {
             debug!("Received IRC message: {:?}", irc_message);
@@ -253,5 +261,11 @@ async fn main() {
         }
     });
 
-    let _ = tokio::join!(irc_thread, timer_thread, livestream_thread, seventv_thread);
+    let _ = tokio::join!(
+        irc_thread,
+        timer_thread,
+        livestream_thread,
+        seventv_thread,
+        github_thread
+    );
 }
