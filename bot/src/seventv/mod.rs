@@ -92,7 +92,7 @@ impl SevenTVWebsocketClient {
     pub async fn process_message(&mut self, msg: Message) -> Result<(), eyre::Report> {
         match msg {
             Message::Text(s) => {
-                println!("received 7tv text message: {s}");
+                log::debug!("received 7tv text message: {s}");
 
                 if let Ok(e) = serde_json::from_str::<Payload<Value>>(s.as_str()) {
                     let d = e.d.to_string();
@@ -117,25 +117,22 @@ impl SevenTVWebsocketClient {
                             }
                         }
                         // Heartbeat
-                        2 => println!("[7TV EventAPI] Heartbeat!"),
+                        2 => log::info!("Heartbeat!"),
                         // Reconnect
                         4 => {
-                            println!("[7TV EventAPI] Reconnect!");
+                            log::info!("Reconnect!");
 
                             self.flip_channels().await;
                             self.socket.close(None).await?;
                             self.socket = connect(self.reconnect_url.clone()).await?;
                         }
                         // Error
-                        6 => println!("[7TV EventAPI] Error: {}", e.d),
+                        6 => log::error!("Error: {}", e.d),
                         // End of Stream
                         7 => {
-                            println!("[7TV EventAPI] The host has closed the connection! Reason: ")
+                            log::info!("The host has closed the connection! Reason: ")
                         }
-                        _ => println!(
-                            "[7TV EventAPI] Unhandled opcode: {}. Payload: {}",
-                            e.op, e.d
-                        ),
+                        _ => log::error!("Unhandled opcode: {}. Payload: {}", e.op, e.d),
                     }
                 }
             }
@@ -183,7 +180,7 @@ impl SevenTVWebsocketClient {
 
     async fn handle_dispatch(&mut self, body: Dispatch) -> Result<(), eyre::Error> {
         if body.event_type != *"emote_set.update" {
-            println!("[7TV EventAPI] Unhandled body type: {}", body.event_type);
+            log::warn!("Unhandled body type: {}", body.event_type);
             return Ok(());
         }
 
@@ -376,12 +373,11 @@ impl SevenTVWebsocketClient {
                 },
             };
 
-            println!("{:?}", serde_json::to_string(&data).unwrap());
             self.socket
                 .send(Message::Text(serde_json::to_string(&data).unwrap()))
                 .await?;
 
-            println!("Listening 7TV events for {}'s emote set", user.username);
+            log::info!("Listening 7TV events for {}'s emote set", user.username);
 
             self.listening_channel_ids.insert(channel_id);
         }
@@ -391,7 +387,7 @@ impl SevenTVWebsocketClient {
 
     async fn resume_session(&mut self) -> Result<(), eyre::Error> {
         if self.session_id.is_none() {
-            println!("[7TV EventAPI] Failed to resume a session because session_id is none!");
+            log::warn!("Failed to resume a session because session_id is none!");
 
             return Ok(());
         }

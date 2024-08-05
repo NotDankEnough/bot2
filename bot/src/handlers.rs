@@ -1,7 +1,9 @@
 use std::{collections::HashSet, sync::Arc};
 
 use chrono::Utc;
-use diesel::{insert_into, update, BelongingToDsl, ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl};
+use diesel::{
+    insert_into, update, BelongingToDsl, ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl,
+};
 use log::info;
 use twitch_api::{helix::chat::GetChattersRequest, types::UserId};
 use twitch_irc::message::{NoticeMessage, PrivmsgMessage};
@@ -13,11 +15,15 @@ use crate::{
 };
 
 use common::{
-    establish_connection, models::{
-        Channel, ChannelFeature, ChannelPreference, CustomCommand, Event, EventFlag, EventSubscription, EventType, NewAction, Timer, User
-    }, schema::{
-        actions::dsl as ac, channels::dsl as ch, custom_commands::dsl as cc, events::dsl as ev, timers::dsl as ti, users::dsl as us
-    }
+    establish_connection,
+    models::{
+        Channel, ChannelFeature, ChannelPreference, CustomCommand, Event, EventFlag,
+        EventSubscription, EventType, NewAction, Timer, User,
+    },
+    schema::{
+        actions::dsl as ac, channels::dsl as ch, custom_commands::dsl as cc, events::dsl as ev,
+        timers::dsl as ti, users::dsl as us,
+    },
 };
 
 pub async fn handle_chat_message(
@@ -29,11 +35,16 @@ pub async fn handle_chat_message(
     handle_stalk_message_events(conn, instance_bundle.clone(), message.clone()).await;
 
     if let Some(request) = Request::try_from(&message, &command_loader, conn) {
-        let features: Vec<&String> = request.channel_preference.features.iter().flatten().collect();
+        let features: Vec<&String> = request
+            .channel_preference
+            .features
+            .iter()
+            .flatten()
+            .collect();
         if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
             return;
         }
-        
+
         let response = command_loader
             .execute_command(&instance_bundle, request.clone())
             .await;
@@ -84,7 +95,11 @@ pub async fn handle_chat_message(
             Err(e) => {
                 let response = e.formatted_message(&request, instance_bundle.localizator.clone());
 
-                instance_bundle.twitch_irc_client.say(message.channel_login.clone(), response).await.expect("Failed to send message");
+                instance_bundle
+                    .twitch_irc_client
+                    .say(message.channel_login.clone(), response)
+                    .await
+                    .expect("Failed to send message");
             }
         }
     }
@@ -102,14 +117,14 @@ pub async fn handle_timers(instance_bundle: &InstanceBundle) {
 
     for channel in channels {
         let preferences: ChannelPreference = ChannelPreference::belonging_to(&channel)
-        .first::<ChannelPreference>(conn)
-        .expect("Failed to load preferences");
-    
+            .first::<ChannelPreference>(conn)
+            .expect("Failed to load preferences");
+
         let features: Vec<&String> = preferences.features.iter().flatten().collect();
         if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
             continue;
         }
-        
+
         let timers = Timer::belonging_to(&channel)
             .filter(ti::is_enabled.eq(true))
             .load::<Timer>(conn)
@@ -136,8 +151,16 @@ pub async fn handle_timers(instance_bundle: &InstanceBundle) {
                 let channel_name = channel.alias_name.clone();
 
                 match first_line {
-                    "/me" => instance_bundle.twitch_irc_client.me(channel_name, s_line).await.expect("Failed to send a message"),
-                    _ => instance_bundle.twitch_irc_client.say(channel_name, line).await.expect("Failed to send a message")
+                    "/me" => instance_bundle
+                        .twitch_irc_client
+                        .me(channel_name, s_line)
+                        .await
+                        .expect("Failed to send a message"),
+                    _ => instance_bundle
+                        .twitch_irc_client
+                        .say(channel_name, line)
+                        .await
+                        .expect("Failed to send a message"),
                 };
             }
 
@@ -164,14 +187,14 @@ pub async fn handle_custom_commands(
 
     if let Some(channel) = channels.first() {
         let preferences: ChannelPreference = ChannelPreference::belonging_to(&channel)
-        .first::<ChannelPreference>(conn)
-        .expect("Failed to load preferences");
-    
+            .first::<ChannelPreference>(conn)
+            .expect("Failed to load preferences");
+
         let features: Vec<&String> = preferences.features.iter().flatten().collect();
         if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
             return;
         }
-    
+
         let commands = CustomCommand::belonging_to(&channel)
             .filter(cc::is_enabled.eq(true))
             .load::<CustomCommand>(conn)
@@ -194,7 +217,7 @@ pub async fn handle_stream_event(
     instance_bundle: Arc<InstanceBundle>,
     target_id: UserId,
     event_type: EventType,
-    parameters: Vec<String>
+    parameters: Vec<String>,
 ) {
     let target_id = target_id.take().parse::<i32>().unwrap();
     let events = match ev::events
@@ -204,7 +227,7 @@ pub async fn handle_stream_event(
     {
         Ok(v) => v,
         Err(e) => {
-            println!("[STREAM EVENT HANDLER] Failed to get events: {}", e);
+            log::warn!("Failed to get events: {}", e);
             return;
         }
     };
@@ -215,10 +238,7 @@ pub async fn handle_stream_event(
             let channel = match ch::channels.find(event.channel_id).first::<Channel>(conn) {
                 Ok(v) => v,
                 Err(e) => {
-                    println!(
-                        "[STREAM EVENT HANDLER] Failed to get channel for event ID {}: {}",
-                        event.id, e
-                    );
+                    log::warn!("Failed to get channel for event ID {}: {}", event.id, e);
                     continue;
                 }
             };
@@ -232,14 +252,15 @@ pub async fn handle_stream_event(
             if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
                 continue;
             }
-            
+
             let subs = match EventSubscription::belonging_to(&event).load::<EventSubscription>(conn)
             {
                 Ok(v) => v,
                 Err(e) => {
-                    println!(
-                        "[STREAM EVENT HANDLER] Failed to get subscriptions for event ID {}: {}",
-                        event.id, e
+                    log::warn!(
+                        "Failed to get subscriptions for event ID {}: {}",
+                        event.id,
+                        e
                     );
                     continue;
                 }
@@ -248,10 +269,7 @@ pub async fn handle_stream_event(
             let users = match us::users.load::<User>(conn) {
                 Ok(v) => v,
                 Err(e) => {
-                    println!(
-                        "[STREAM EVENT HANDLER] Failed to get users for event ID {}: {}",
-                        event.id, e
-                    );
+                    log::warn!("Failed to get users for event ID {}: {}", event.id, e);
                     continue;
                 }
             };
@@ -273,21 +291,43 @@ pub async fn handle_stream_event(
                     let broadcaster_id = channel.alias_id.to_string();
                     let moderator_id = instance_bundle.twitch_api_token.user_id.clone().take();
 
-                    let chatters = match instance_bundle.twitch_api_client.req_get(GetChattersRequest::new(broadcaster_id.as_str(), moderator_id.as_str()), &*instance_bundle.twitch_api_token).await {
+                    let chatters = match instance_bundle
+                        .twitch_api_client
+                        .req_get(
+                            GetChattersRequest::new(broadcaster_id.as_str(), moderator_id.as_str()),
+                            &*instance_bundle.twitch_api_token,
+                        )
+                        .await
+                    {
                         Ok(v) => v,
                         Err(e) => {
-                            println!("[STREAM EVENT HANDLER] Failed to get chatters for channel ID {}: {}", channel.id, e);
-                            return; 
+                            log::warn!(
+                                "Failed to get chatters for channel ID {}: {}",
+                                channel.id,
+                                e
+                            );
+                            return;
                         }
                     };
 
-                    let chatters = chatters.data.iter().map(|x| format!("@{}", x.user_login)).collect::<HashSet<String>>();
+                    let chatters = chatters
+                        .data
+                        .iter()
+                        .map(|x| format!("@{}", x.user_login))
+                        .collect::<HashSet<String>>();
 
                     subs.extend(chatters);
                 }
 
-                let placeholders = instance_bundle.localizator.parse_placeholders(&event.message);
-                let line = instance_bundle.localizator.replace_placeholders(event.message, placeholders, parameters, None);
+                let placeholders = instance_bundle
+                    .localizator
+                    .parse_placeholders(&event.message);
+                let line = instance_bundle.localizator.replace_placeholders(
+                    event.message,
+                    placeholders,
+                    parameters,
+                    None,
+                );
 
                 if subs.is_empty() {
                     instance_bundle
@@ -358,14 +398,18 @@ pub async fn handle_notice_message(instance_bundle: Arc<InstanceBundle>, message
                 instance_bundle.twitch_irc_client.part(login);
             }
             _ => {}
-
         }
     }
 }
 
-async fn handle_stalk_message_events(conn: &mut PgConnection, instance_bundle: Arc<InstanceBundle>, message: PrivmsgMessage) {
+async fn handle_stalk_message_events(
+    conn: &mut PgConnection,
+    instance_bundle: Arc<InstanceBundle>,
+    message: PrivmsgMessage,
+) {
     let id = message.sender.id.parse::<i32>().unwrap();
-    let events: Vec<Event> = ev::events.filter(ev::target_alias_id.eq(&id))
+    let events: Vec<Event> = ev::events
+        .filter(ev::target_alias_id.eq(&id))
         .filter(ev::event_type.eq(&EventType::Message))
         .get_results::<Event>(conn)
         .unwrap_or(Vec::new());
@@ -385,7 +429,7 @@ async fn handle_stalk_message_events(conn: &mut PgConnection, instance_bundle: A
             let preferences: ChannelPreference = ChannelPreference::belonging_to(&channel)
                 .first::<ChannelPreference>(conn)
                 .expect("Failed to load preferences");
-    
+
             let features: Vec<&String> = preferences.features.iter().flatten().collect();
             if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
                 continue;
@@ -395,7 +439,11 @@ async fn handle_stalk_message_events(conn: &mut PgConnection, instance_bundle: A
             {
                 Ok(v) => v,
                 Err(e) => {
-                    log::error!("Failed to get subscriptions for event ID {}: {}", event.id, e);
+                    log::error!(
+                        "Failed to get subscriptions for event ID {}: {}",
+                        event.id,
+                        e
+                    );
                     return;
                 }
             };
@@ -423,7 +471,14 @@ async fn handle_stalk_message_events(conn: &mut PgConnection, instance_bundle: A
                     let broadcaster_id = channel.alias_id.to_string();
                     let moderator_id = instance_bundle.twitch_api_token.user_id.clone().take();
 
-                    let chatters = match instance_bundle.twitch_api_client.req_get(GetChattersRequest::new(broadcaster_id.as_str(), moderator_id.as_str()), &*instance_bundle.twitch_api_token).await {
+                    let chatters = match instance_bundle
+                        .twitch_api_client
+                        .req_get(
+                            GetChattersRequest::new(broadcaster_id.as_str(), moderator_id.as_str()),
+                            &*instance_bundle.twitch_api_token,
+                        )
+                        .await
+                    {
                         Ok(v) => v,
                         Err(e) => {
                             log::error!("Failed to get chatters for event ID {}: {}", event.id, e);
@@ -431,17 +486,28 @@ async fn handle_stalk_message_events(conn: &mut PgConnection, instance_bundle: A
                         }
                     };
 
-                    let chatters = chatters.data.iter().map(|x| format!("@{}", x.user_login)).collect::<HashSet<String>>();
+                    let chatters = chatters
+                        .data
+                        .iter()
+                        .map(|x| format!("@{}", x.user_login))
+                        .collect::<HashSet<String>>();
 
                     subs.extend(chatters);
                 }
 
-                let placeholders = instance_bundle.localizator.parse_placeholders(&event.message);
-                let line = instance_bundle.localizator.replace_placeholders(event.message, placeholders, vec![
-                    message.sender.login.clone(),
-                    message.channel_login.clone(),
-                    message.message_text.clone()
-                ], None);
+                let placeholders = instance_bundle
+                    .localizator
+                    .parse_placeholders(&event.message);
+                let line = instance_bundle.localizator.replace_placeholders(
+                    event.message,
+                    placeholders,
+                    vec![
+                        message.sender.login.clone(),
+                        message.channel_login.clone(),
+                        message.message_text.clone(),
+                    ],
+                    None,
+                );
 
                 if subs.is_empty() {
                     instance_bundle

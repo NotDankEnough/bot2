@@ -71,8 +71,6 @@ impl Command for ChattersCommand {
             .await
             .expect("Failed to send a request to paste service");
 
-        println!("{}", paste_request.status());
-
         if paste_request.status() != StatusCode::CREATED {
             return Err(ResponseError::ExternalAPIError(
                 paste_request.status().as_u16() as u32,
