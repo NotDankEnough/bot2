@@ -118,10 +118,7 @@ impl GithubCommitsHelper {
                         if response.status() == StatusCode::OK {
                             response.json::<Vec<GithubResponse>>().await
                         } else {
-                            warn!(
-                                "GitHub commit response have {}",
-                                response.text().await.unwrap()
-                            );
+                            warn!("GitHub REST API returned {}", response.status());
                             continue;
                         }
                     }
