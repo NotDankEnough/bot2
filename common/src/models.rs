@@ -189,19 +189,17 @@ impl FromStr for EventType {
     }
 }
 
-impl ToString for EventType {
-    fn to_string(&self) -> String {
-        let x = match self {
-            Self::Live => "live",
-            Self::Offline => "offline",
-            Self::Title => "title",
-            Self::Category => "category",
-            Self::Message => "message",
-            Self::Github => "github",
-            Self::Custom => "custom",
-        };
-
-        x.to_string()
+impl Display for EventType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Live => write!(f, "live"),
+            Self::Offline => write!(f, "offline"),
+            Self::Title => write!(f, "title"),
+            Self::Category => write!(f, "category"),
+            Self::Message => write!(f, "message"),
+            Self::Github => write!(f, "github"),
+            Self::Custom => write!(f, "custom"),
+        }
     }
 }
 
@@ -222,12 +220,11 @@ impl FromStr for EventFlag {
     }
 }
 
-impl ToString for EventFlag {
-    fn to_string(&self) -> String {
+impl Display for EventFlag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Massping => "massping",
+            Self::Massping => write!(f, "massping"),
         }
-        .to_string()
     }
 }
 
