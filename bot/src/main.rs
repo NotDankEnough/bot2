@@ -158,7 +158,7 @@ async fn main() {
                     .execute(conn)
                     .expect("Failed to update channel name");
 
-                channel.alias_name = login.clone();
+                channel.alias_name.clone_from(&login);
             }
 
             irc_client.join(login).expect("Failed to join a channel");

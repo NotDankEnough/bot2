@@ -341,7 +341,7 @@ impl SevenTVWebsocketClient {
             .cloned()
             .collect::<HashSet<UserId>>();
 
-        *data = ids.clone();
+        data.clone_from(&ids);
 
         drop(data);
 

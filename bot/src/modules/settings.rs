@@ -70,7 +70,7 @@ impl Command for SettingsCommand {
                     return Err(ResponseError::NotFound(message));
                 }
 
-                request.channel_preference.language = message.clone();
+                request.channel_preference.language.clone_from(&message);
 
                 update(chp::channel_preferences.find(&request.channel_preference.id))
                     .set(chp::language.eq(message))

@@ -108,7 +108,8 @@ pub async fn join_channel(body: web::Json<JoinRequest>, request: HttpRequest) ->
         }
     };
 
-    let (login, id): (String, i32);
+    let id: i32;
+    let mut login = String::new();
 
     if user.alias_id.ne(&body.alias_id) {
         let user_session: Session = match se::sessions
@@ -158,7 +159,7 @@ pub async fn join_channel(body: web::Json<JoinRequest>, request: HttpRequest) ->
             Ok(response) => match response.json::<ModeratedChannelResponse>().await {
                 Ok(json) => match json.data.iter().find(|x| x.broadcaster_id.eq(&b_id)) {
                     Some(channel) => {
-                        login = channel.broadcaster_login.clone();
+                        login.clone_from(&channel.broadcaster_login);
                         id = channel.broadcaster_id.parse::<i32>().unwrap();
                     }
                     None => {
@@ -186,7 +187,7 @@ pub async fn join_channel(body: web::Json<JoinRequest>, request: HttpRequest) ->
             }
         }
     } else {
-        login = user.alias_name.clone();
+        login.clone_from(&user.alias_name);
         id = user.alias_id;
     }
 

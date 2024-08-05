@@ -100,7 +100,7 @@ impl Request {
             });
 
         if sender.alias_name.ne(&message.sender.login) {
-            sender.alias_name = message.sender.login.clone();
+            sender.alias_name.clone_from(&message.sender.login);
 
             update(us::users.find(sender.id))
                 .set(us::alias_name.eq(&message.sender.login))
