@@ -112,7 +112,7 @@ impl Command for EventCommand {
             _ => -1,
         };
 
-        let name_and_type = format!("{}:{}", target_name, event_type.to_string());
+        let name_and_type = format!("{}:{}", target_name, event_type);
 
         if target_id == -1 && event_type != EventType::Custom && event_type != EventType::Github {
             return Err(ResponseError::NotFound(target_name));

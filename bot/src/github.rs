@@ -72,6 +72,7 @@ impl GithubCommitsHelper {
         }
     }
 
+    #[allow(clippy::type_complexity)]
     async fn process_repos(&mut self) {
         let conn = &mut establish_connection();
         let events: Vec<(i32, Vec<EventFlag>, i32, Option<String>, String)> = ev::events

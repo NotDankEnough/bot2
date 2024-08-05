@@ -138,7 +138,7 @@ pub async fn get_channel(
 
     let internal_channel: Channel = match ch::channels
         .filter(ch::alias_name.eq(&*id))
-        .or_filter(ch::alias_id.eq((&*id).parse::<i32>().unwrap_or(-1)))
+        .or_filter(ch::alias_id.eq(id.parse::<i32>().unwrap_or(-1)))
         .get_result::<Channel>(conn)
     {
         Ok(x) => x,
@@ -311,7 +311,6 @@ pub async fn search(
 
     let channels: Vec<Channel> = channels
         .iter()
-        .cloned()
         .filter(|x| {
             if is_number && number_id >= 0 {
                 x.alias_id.eq(&number_id)
@@ -319,6 +318,7 @@ pub async fn search(
                 x.alias_name.eq(&query.query)
             }
         })
+        .cloned()
         .collect();
 
     let channel_ids_str: Vec<String> = channels.iter().map(|x| x.alias_id.to_string()).collect();
@@ -426,8 +426,8 @@ pub async fn channel_catalog(
     if let Ok(name) = var("BOT_USERNAME") {
         channels = channels
             .iter()
-            .cloned()
             .filter(|x| x.username.ne(&name))
+            .cloned()
             .collect();
     }
 

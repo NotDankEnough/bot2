@@ -74,10 +74,7 @@ impl Command for CustomCommandsCommand {
                 ));
             }
 
-            let cmd_names = cmds
-                .iter()
-                .map(|x| format!("{}", x.name))
-                .collect::<Vec<String>>();
+            let cmd_names = cmds.iter().map(|x| x.name.clone()).collect::<Vec<String>>();
 
             return Ok(Response::Single(
                 instance_bundle.localizator.formatted_text_by_request(

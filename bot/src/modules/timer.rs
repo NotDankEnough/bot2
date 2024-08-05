@@ -78,7 +78,7 @@ impl Command for TimerCommand {
 
             let timer_names = timers
                 .iter()
-                .map(|x| format!("{}", x.name))
+                .map(|x| x.name.clone())
                 .collect::<Vec<String>>();
 
             return Ok(Response::Single(

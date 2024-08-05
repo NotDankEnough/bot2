@@ -22,6 +22,7 @@ use common::{
 
 use super::CommandLoader;
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct Request {
     pub command_id: String,

@@ -19,31 +19,31 @@ pub struct Dispatch {
 pub struct DispatchBody {
     pub id: String,
     pub actor: User,
-    pub added: Option<Vec<ChangeField>>,
+    // pub added: Option<Vec<ChangeField>>,
     pub updated: Option<Vec<ChangeField>>,
-    pub removed: Option<Vec<ChangeField>>,
+    // pub removed: Option<Vec<ChangeField>>,
     pub pushed: Option<Vec<ChangeField>>,
     pub pulled: Option<Vec<ChangeField>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct ChangeField {
-    pub key: String,
+    // pub key: String,
     pub old_value: Option<Emote>,
     pub value: Option<Emote>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Hello {
-    pub subscription_limit: u32,
+    // pub subscription_limit: u32,
     pub session_id: String,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct Ack {
-    pub command: String,
-    pub data: String,
-}
+// #[derive(Deserialize, Debug)]
+// pub struct Ack {
+//     pub command: String,
+//     pub data: String,
+// }
 
 #[derive(Serialize, Debug)]
 pub struct Subscribe {

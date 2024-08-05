@@ -9,7 +9,7 @@ lazy_static! {
 }
 
 pub const DEFAULT_COMMAND_DELAY_SEC: i32 = 5;
-pub const DEFAULT_COMMAND_OPTIONS: Vec<String> = Vec::new();
+// pub const DEFAULT_COMMAND_OPTIONS: Vec<String> = Vec::new();
 pub const DEFAULT_COMMAND_SUBCOMMANDS: Vec<String> = Vec::new();
 pub const DEFAULT_COMMAND_LEVEL_OF_RIGHTS: LevelOfRights = LevelOfRights::User;
 

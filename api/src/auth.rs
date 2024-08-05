@@ -37,7 +37,7 @@ pub struct InternalUserResponsePart {
 #[derive(Deserialize)]
 pub struct AuthenticationSuccess {
     pub code: String,
-    pub scope: String,
+    // pub scope: String,
     pub state: String,
 }
 

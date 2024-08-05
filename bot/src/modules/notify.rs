@@ -111,11 +111,7 @@ impl Command for NotifyCommand {
                             .filter(|x| x.target_alias_id.is_some())
                             .find(|x| x.target_alias_id.unwrap() == id)
                         {
-                            t_subs.push(format!(
-                                "{}:{}",
-                                user.login.take(),
-                                e.event_type.to_string()
-                            ));
+                            t_subs.push(format!("{}:{}", user.login.take(), e.event_type));
                         }
                     }
                 }
@@ -124,7 +120,7 @@ impl Command for NotifyCommand {
                     t_subs.push(format!(
                         "{}:{} *",
                         event.custom_alias_id.clone().unwrap(),
-                        event.event_type.to_string(),
+                        event.event_type,
                     ));
                 }
 
@@ -182,11 +178,7 @@ impl Command for NotifyCommand {
                             .filter(|x| x.target_alias_id.is_some())
                             .find(|x| x.target_alias_id.unwrap() == id)
                         {
-                            t_subs.push(format!(
-                                "{}:{}",
-                                user.login.take(),
-                                e.event_type.to_string()
-                            ));
+                            t_subs.push(format!("{}:{}", user.login.take(), e.event_type));
                         }
                     }
                 }
@@ -195,7 +187,7 @@ impl Command for NotifyCommand {
                     t_subs.push(format!(
                         "{}:{} *",
                         event.custom_alias_id.clone().unwrap(),
-                        event.event_type.to_string(),
+                        event.event_type,
                     ));
                 }
 
@@ -319,8 +311,7 @@ impl Command for NotifyCommand {
             (_, None) => {
                 return Err(ResponseError::NotFound(format!(
                     "{}:{}",
-                    target_name,
-                    event_type.to_string()
+                    target_name, event_type
                 )))
             }
 

@@ -10,8 +10,7 @@ use crate::{
         userid::UserIdCommand,
     },
     shared_variables::{
-        DEFAULT_COMMAND_DELAY_SEC, DEFAULT_COMMAND_LEVEL_OF_RIGHTS, DEFAULT_COMMAND_OPTIONS,
-        DEFAULT_COMMAND_SUBCOMMANDS,
+        DEFAULT_COMMAND_DELAY_SEC, DEFAULT_COMMAND_LEVEL_OF_RIGHTS, DEFAULT_COMMAND_SUBCOMMANDS,
     },
 };
 use async_trait::async_trait;
@@ -31,9 +30,6 @@ pub trait Command {
     fn get_name(&self) -> String;
     fn get_delay_sec(&self) -> i32 {
         DEFAULT_COMMAND_DELAY_SEC
-    }
-    fn get_options(&self) -> Vec<String> {
-        DEFAULT_COMMAND_OPTIONS
     }
     fn get_subcommands(&self) -> Vec<String> {
         DEFAULT_COMMAND_SUBCOMMANDS

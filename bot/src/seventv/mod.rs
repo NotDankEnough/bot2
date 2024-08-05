@@ -10,7 +10,7 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use futures::SinkExt;
 use log::info;
 use serde_json::Value;
-use std::{collections::HashSet, str::FromStr, sync::Arc, time::Duration};
+use std::{collections::HashSet, sync::Arc, time::Duration};
 
 use eyre::Context;
 use reqwest::Url;

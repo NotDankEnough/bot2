@@ -118,7 +118,6 @@ pub enum LineId {
     HelpCommand,
 
     EventAlreadyExistsError,
-    TimerAlreadyExistsError,
     CustomCommandAlreadyExistsError,
 
     ChattersResponse,

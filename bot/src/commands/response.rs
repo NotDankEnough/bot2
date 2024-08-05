@@ -28,6 +28,7 @@ impl Display for Response {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum ResponseError {
     NotEnoughArguments(CommandArgument),
