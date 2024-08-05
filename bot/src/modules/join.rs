@@ -1,7 +1,7 @@
 use std::env;
 
 use async_trait::async_trait;
-use diesel::{insert_into, ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use log::warn;
 use serde::Serialize;
 use twitch_api::{
@@ -21,7 +21,7 @@ use crate::{
 
 use common::{
     establish_connection,
-    models::{Channel, NewChannel, NewChannelPreference},
+    models::{Channel, ChannelFeature, ChannelPreference, NewChannel, NewChannelPreference},
     schema::{channel_preferences::dsl as chp, channels::dsl as ch},
 };
 
@@ -38,12 +38,17 @@ impl Command for JoinCommand {
         "join".to_string()
     }
 
+    fn get_subcommands(&self) -> Vec<String> {
+        vec!["quiet".into()]
+    }
+
     async fn execute(
         &self,
         instance_bundle: &InstanceBundle,
         request: Request,
     ) -> Result<Response, ResponseError> {
         let superuser_alias_id = env::var("BOT_OWNER_ID");
+        let quiet_mode: bool;
 
         let (alias_id, alias_name): (i32, String) = if request.message.is_some()
             && superuser_alias_id.is_ok()
@@ -51,6 +56,12 @@ impl Command for JoinCommand {
                 .unwrap()
                 .eq(&request.sender.alias_id.to_string())
         {
+            if let Some(subcommand_id) = &request.subcommand_id {
+                quiet_mode = subcommand_id.eq(&"quiet".to_string());
+            } else {
+                quiet_mode = false;
+            }
+
             let msg = request.message.clone().unwrap();
 
             let ids: &[&UserIdRef] = &[msg.as_str().into()];
@@ -77,6 +88,7 @@ impl Command for JoinCommand {
                 None => return Err(ResponseError::NotFound(msg)),
             }
         } else {
+            quiet_mode = false;
             (request.sender.alias_id, request.sender.alias_name.clone())
         };
 
@@ -109,32 +121,41 @@ impl Command for JoinCommand {
             .first::<Channel>(conn)
             .expect("Failed to get users");
 
-        insert_into(chp::channel_preferences)
+        let prefs = insert_into(chp::channel_preferences)
             .values([NewChannelPreference {
                 channel_id: new_channel.id,
                 prefix: request.channel_preference.prefix.clone(),
                 language: request.channel_preference.language.clone(),
             }])
-            .execute(conn)
+            .get_result::<ChannelPreference>(conn)
             .expect("Failed to insert preferences for a new channel");
+
+        if quiet_mode {
+            update(chp::channel_preferences.find(&prefs.id))
+                .set(chp::features.eq(vec![ChannelFeature::ShutupChannel.to_string()]))
+                .execute(conn)
+                .expect("Failed to set quiet mode");
+        }
 
         instance_bundle
             .twitch_irc_client
             .join(alias_name.clone())
             .expect("Failed to join chat room");
 
-        instance_bundle
-            .twitch_irc_client
-            .say(
-                alias_name.clone(),
-                instance_bundle.localizator.formatted_text_by_request(
-                    &request,
-                    LineId::CommandJoinResponseInChat,
-                    Vec::<String>::new(),
-                ),
-            )
-            .await
-            .expect("Failed to send a message");
+        if !quiet_mode {
+            instance_bundle
+                .twitch_irc_client
+                .say(
+                    alias_name.clone(),
+                    instance_bundle.localizator.formatted_text_by_request(
+                        &request,
+                        LineId::CommandJoinResponseInChat,
+                        Vec::<String>::new(),
+                    ),
+                )
+                .await
+                .expect("Failed to send a message");
+        }
 
         if let Ok(stats_hostname) = env::var("STATS_API_HOSTNAME") {
             let url = format!("{}/api/v1/join", stats_hostname);
