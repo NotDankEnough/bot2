@@ -44,6 +44,7 @@ pub struct NewChannelPreference {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ChannelFeature {
     Notify7TVUpdates,
+    ShutupChannel,
 }
 
 impl FromStr for ChannelFeature {
@@ -51,6 +52,7 @@ impl FromStr for ChannelFeature {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "notify_7tv_updates" => Ok(Self::Notify7TVUpdates),
+            "shutup_channel" => Ok(Self::ShutupChannel),
             _ => Err("failed to serialize a str".to_string()),
         }
     }
@@ -59,7 +61,8 @@ impl FromStr for ChannelFeature {
 impl Display for ChannelFeature {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            &Self::Notify7TVUpdates => write!(f, "notify_7tv_updates"),
+            Self::Notify7TVUpdates => write!(f, "notify_7tv_updates"),
+            Self::ShutupChannel => write!(f, "shutup_channel"),
         }
     }
 }

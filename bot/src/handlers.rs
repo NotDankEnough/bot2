@@ -14,7 +14,7 @@ use crate::{
 
 use common::{
     establish_connection, models::{
-        Channel, CustomCommand, Event, EventFlag, EventSubscription, EventType, NewAction, Timer, User
+        Channel, ChannelFeature, ChannelPreference, CustomCommand, Event, EventFlag, EventSubscription, EventType, NewAction, Timer, User
     }, schema::{
         actions::dsl as ac, channels::dsl as ch, custom_commands::dsl as cc, events::dsl as ev, timers::dsl as ti, users::dsl as us
     }
@@ -29,6 +29,11 @@ pub async fn handle_chat_message(
     handle_stalk_message_events(conn, instance_bundle.clone(), message.clone()).await;
 
     if let Some(request) = Request::try_from(&message, &command_loader, conn) {
+        let features: Vec<&String> = request.channel_preference.features.iter().flatten().collect();
+        if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
+            return;
+        }
+        
         let response = command_loader
             .execute_command(&instance_bundle, request.clone())
             .await;
@@ -96,6 +101,15 @@ pub async fn handle_timers(instance_bundle: &InstanceBundle) {
         .expect("Failed to get channels");
 
     for channel in channels {
+        let preferences: ChannelPreference = ChannelPreference::belonging_to(&channel)
+        .first::<ChannelPreference>(conn)
+        .expect("Failed to load preferences");
+    
+        let features: Vec<&String> = preferences.features.iter().flatten().collect();
+        if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
+            continue;
+        }
+        
         let timers = Timer::belonging_to(&channel)
             .filter(ti::is_enabled.eq(true))
             .load::<Timer>(conn)
@@ -149,6 +163,15 @@ pub async fn handle_custom_commands(
         .unwrap_or_else(|_| panic!("Failed to load channel data with alias ID {}", alias_id));
 
     if let Some(channel) = channels.first() {
+        let preferences: ChannelPreference = ChannelPreference::belonging_to(&channel)
+        .first::<ChannelPreference>(conn)
+        .expect("Failed to load preferences");
+    
+        let features: Vec<&String> = preferences.features.iter().flatten().collect();
+        if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
+            return;
+        }
+    
         let commands = CustomCommand::belonging_to(&channel)
             .filter(cc::is_enabled.eq(true))
             .load::<CustomCommand>(conn)
@@ -199,6 +222,17 @@ pub async fn handle_stream_event(
                     continue;
                 }
             };
+
+            let preferences: ChannelPreference = ChannelPreference::belonging_to(&channel)
+                .first::<ChannelPreference>(conn)
+                .expect("Failed to load preferences");
+
+            let features: Vec<&String> = preferences.features.iter().flatten().collect();
+
+            if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
+                continue;
+            }
+            
             let subs = match EventSubscription::belonging_to(&event).load::<EventSubscription>(conn)
             {
                 Ok(v) => v,
@@ -347,6 +381,15 @@ async fn handle_stalk_message_events(conn: &mut PgConnection, instance_bundle: A
                     return;
                 }
             };
+
+            let preferences: ChannelPreference = ChannelPreference::belonging_to(&channel)
+                .first::<ChannelPreference>(conn)
+                .expect("Failed to load preferences");
+    
+            let features: Vec<&String> = preferences.features.iter().flatten().collect();
+            if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
+                continue;
+            }
 
             let subs = match EventSubscription::belonging_to(&event).load::<EventSubscription>(conn)
             {

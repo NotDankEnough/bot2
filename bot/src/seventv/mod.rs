@@ -225,13 +225,13 @@ impl SevenTVWebsocketClient {
                             .get_result::<(String, Vec<Option<String>>)>(conn)
                             .expect("Failed to get channel preference");
 
-                        if !channel_features.iter().flatten().any(|x| {
-                            if let Ok(f) = ChannelFeature::from_str(x.as_str()) {
-                                f == ChannelFeature::Notify7TVUpdates
-                            } else {
-                                false
-                            }
-                        }) {
+                        let channel_features: Vec<&String> =
+                            channel_features.iter().flatten().collect();
+
+                        if channel_features.contains(&&ChannelFeature::ShutupChannel.to_string())
+                            || !channel_features
+                                .contains(&&ChannelFeature::Notify7TVUpdates.to_string())
+                        {
                             return Ok(());
                         }
 

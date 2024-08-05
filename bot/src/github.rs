@@ -7,9 +7,9 @@ use std::{
 
 use common::{
     establish_connection,
-    models::{Channel, EventFlag, EventType},
+    models::{Channel, ChannelFeature, ChannelPreference, EventFlag, EventType},
 };
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{BelongingToDsl, ExpressionMethods, QueryDsl, RunQueryDsl};
 use log::{info, warn};
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -179,6 +179,15 @@ impl GithubCommitsHelper {
                     }
 
                     let channel: Channel = channel.unwrap();
+
+                    let preferences: ChannelPreference = ChannelPreference::belonging_to(&channel)
+                        .first::<ChannelPreference>(conn)
+                        .expect("Failed to load preferences");
+
+                    let features: Vec<&String> = preferences.features.iter().flatten().collect();
+                    if features.contains(&&ChannelFeature::ShutupChannel.to_string()) {
+                        continue;
+                    }
 
                     let subs = match evs::event_subscriptions
                         .filter(evs::event_id.eq(&eid))
