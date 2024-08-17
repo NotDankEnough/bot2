@@ -16,10 +16,10 @@ use twitch_api::{
 
 use common::{
     establish_connection, format_timestamp,
-    models::{Channel, Event, Timer},
+    models::{Channel, ChannelFeature, Event, Timer},
     schema::{
-        channels::dsl as ch, custom_commands::dsl as cc, event_subscriptions::dsl as evs,
-        events::dsl as ev, timers::dsl as ti,
+        channel_preferences::dsl as chp, channels::dsl as ch, custom_commands::dsl as cc,
+        event_subscriptions::dsl as evs, events::dsl as ev, timers::dsl as ti,
     },
 };
 
@@ -386,12 +386,25 @@ pub async fn channel_catalog(
     ut: web::Data<UserToken>,
 ) -> HttpResponse {
     let conn = &mut establish_connection();
-    let channels: Vec<(i32, Option<NaiveDateTime>)> = ch::channels
-        .select((ch::alias_id, ch::opt_outed_at))
-        .get_results::<(i32, Option<NaiveDateTime>)>(conn)
+    let channels: Vec<(i32, i32, Option<NaiveDateTime>)> = ch::channels
+        .select((ch::id, ch::alias_id, ch::opt_outed_at))
+        .get_results::<(i32, i32, Option<NaiveDateTime>)>(conn)
         .unwrap_or(Vec::new());
 
-    let channel_ids_str: Vec<String> = channels.iter().map(|(x, _)| x.to_string()).collect();
+    let channel_preferences = chp::channel_preferences
+        .select((chp::channel_id, chp::features))
+        .get_results::<(i32, Vec<Option<String>>)>(conn)
+        .unwrap_or(Vec::new());
+
+    let channels = channels
+        .iter()
+        .filter(|(x, _, _)| {
+            let (_, features) = channel_preferences.iter().find(|(x2, _)| x2.eq(x)).unwrap();
+            !features.contains(&Some(ChannelFeature::ShutupChannel.to_string()))
+        })
+        .collect::<Vec<&(i32, i32, Option<NaiveDateTime>)>>();
+
+    let channel_ids_str: Vec<String> = channels.iter().map(|(_, x, _)| x.to_string()).collect();
     let channel_ids: Vec<&UserIdRef> = channel_ids_str
         .iter()
         .map(|x| UserIdRef::from_str(x.as_str()))
@@ -413,7 +426,7 @@ pub async fn channel_catalog(
                         .clone()
                         .unwrap_or("/static/pfp.png".into()),
                     id: x.id.clone().take(),
-                    opted_out: channels.iter().any(|(y, z)| y.eq(&id) && z.is_some()),
+                    opted_out: channels.iter().any(|(_, y, z)| y.eq(&id) && z.is_some()),
                 }
             })
             .collect()
