@@ -322,7 +322,7 @@ dependencies = [
 
 [[package]]
 name = "api"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "actix-web",
  "actix-web-lab",
@@ -415,7 +415,7 @@ dependencies = [
 
 [[package]]
 name = "bot"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -527,7 +527,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "chrono",
  "diesel",
