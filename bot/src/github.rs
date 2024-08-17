@@ -159,6 +159,7 @@ impl GithubCommitsHelper {
                 );
                 continue;
             }
+            commits.reverse();
             new_map.insert(k, commits);
         }
 
