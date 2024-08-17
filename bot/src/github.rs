@@ -273,7 +273,7 @@ impl GithubCommitsHelper {
                                 .say(channel.alias_name.clone(), format!("🧑‍💻 {}", line))
                                 .await
                                 .expect("Failed to send a message");
-                            return;
+                            continue;
                         }
 
                         let formatted_subs = split_and_wrap_lines(
