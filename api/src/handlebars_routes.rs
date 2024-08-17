@@ -16,7 +16,7 @@ use twitch_api::{
 
 use common::{
     establish_connection, format_timestamp,
-    models::{Channel, ChannelFeature, Event, Timer},
+    models::{Channel, ChannelFeature, ChannelPreference, Event, Timer},
     schema::{
         channel_preferences::dsl as chp, channels::dsl as ch, custom_commands::dsl as cc,
         event_subscriptions::dsl as evs, events::dsl as ev, timers::dsl as ti,
@@ -145,6 +145,11 @@ pub async fn get_channel(
         Err(_) => return HttpResponse::NotFound().body("Wrong id or username"),
     };
 
+    let prefs: ChannelPreference = chp::channel_preferences
+        .filter(chp::channel_id.eq(&internal_channel.id))
+        .get_result::<ChannelPreference>(conn)
+        .unwrap();
+
     let tid = internal_channel.alias_id.to_string();
     let request = GetUsersRequest::ids(vec![UserIdRef::from_str(tid.as_str())]);
     let channel = hc.req_get(request, &**ut).await.unwrap().data;
@@ -270,7 +275,8 @@ pub async fn get_channel(
         "contact_url": contact_url,
         "bot_title": bot_title,
         "joined": format_timestamp((Utc::now().naive_utc().timestamp() - internal_channel.joined_at.timestamp()) as u64),
-        "opted_out": internal_channel.opt_outed_at.is_some()
+        "opted_out": internal_channel.opt_outed_at.is_some(),
+        "is_in_quiet_mode": prefs.features.contains(&Some(ChannelFeature::ShutupChannel.to_string())),
     });
 
     let page = hb.render("channel.html", &data).unwrap();
