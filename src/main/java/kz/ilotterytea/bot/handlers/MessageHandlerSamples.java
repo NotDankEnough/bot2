@@ -2,6 +2,7 @@ package kz.ilotterytea.bot.handlers;
 
 import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
+import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.CustomCommand;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
@@ -14,10 +15,13 @@ import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The samples for Twitch4j events
+ *
  * @author ilotterytea
  * @since 1.0
  */
@@ -27,6 +31,7 @@ public class MessageHandlerSamples {
 
     /**
      * Message handler sample for IRC message events.
+     *
      * @author ilotterytea
      * @since 1.0
      */
@@ -125,35 +130,38 @@ public class MessageHandlerSamples {
 
         String MSG = e.getMessage().get();
         session.getTransaction().commit();
-        
+
         final Optional<ParsedMessage> parsedMessage = ParsedMessage.parse(MSG, channel.getPreferences().getPrefix());
 
         // Processing the command:
         if (parsedMessage.isPresent()) {
             session.getTransaction().begin();
 
-        	Optional<String> response = bot.getLoader().call(
-        			parsedMessage.get().getCommandId(),
+            Optional<Response> responseOptional = bot.getLoader().call(
+                    parsedMessage.get().getCommandId(),
                     session,
-            		e,
-            		parsedMessage.get(),
-            		channel,
-            		user,
-            		userPermission
+                    e,
+                    parsedMessage.get(),
+                    channel,
+                    user,
+                    userPermission
             );
-        	
-        	if (response.isPresent()) {
-                bot.getClient().getChat().sendMessage(
-                        e.getChannel().getName(),
-                        response.get(),
-                        null,
-                        (e.getMessageId().isEmpty()) ? null : e.getMessageId().get()
-                );
+
+            if (responseOptional.isPresent()) {
+                Response response = responseOptional.get();
+
+                if (response.isMultiple()) {
+                    for (String message : response.getMultiple()) {
+                        bot.getClient().getChat().sendMessage(channel.getAliasName(), message);
+                    }
+                } else if (response.isSingle()) {
+                    bot.getClient().getChat().sendMessage(channel.getAliasName(), response.getSingle());
+                }
             }
 
             session.getTransaction().commit();
             session.close();
-        	return;
+            return;
         }
 
         // Processing the custom commands:

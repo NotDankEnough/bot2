@@ -5,6 +5,7 @@ import com.github.twitch4j.helix.domain.Chatter;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
@@ -16,34 +17,46 @@ import org.hibernate.Session;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Ping em, Fors! LUL
+ *
  * @author ilotterytea
  * @since 1.0
  */
 public class MasspingCommand implements Command {
     @Override
-    public String getNameId() { return "massping"; }
+    public String getNameId() {
+        return "massping";
+    }
 
     @Override
-    public int getDelay() { return 60000; }
+    public int getDelay() {
+        return 60000;
+    }
 
     @Override
-    public Permission getPermissions() { return Permission.BROADCASTER; }
+    public Permission getPermissions() {
+        return Permission.BROADCASTER;
+    }
 
     @Override
-    public List<String> getOptions() { return Collections.emptyList(); }
+    public List<String> getOptions() {
+        return Collections.emptyList();
+    }
 
     @Override
-    public List<String> getSubcommands() { return Collections.emptyList(); }
+    public List<String> getSubcommands() {
+        return Collections.emptyList();
+    }
 
     @Override
-    public List<String> getAliases() { return List.of("mp", "масспинг", "мп", "massbing"); }
+    public List<String> getAliases() {
+        return List.of("mp", "масспинг", "мп", "massbing");
+    }
 
     @Override
-    public Optional<String> run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
         List<Chatter> chatters;
 
         try {
@@ -55,23 +68,23 @@ public class MasspingCommand implements Command {
                     null
             ).execute().getChatters();
         } catch (Exception e) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_MASSPING_NOTMOD
             ));
         }
-        
+
         String msgToAnnounce;
-        
+
         if (message.getMessage().isEmpty()) {
-        	msgToAnnounce = "";
+            msgToAnnounce = "";
         } else {
-        	msgToAnnounce = message.getMessage().get();
+            msgToAnnounce = message.getMessage().get();
         }
 
         ArrayList<String> msgs = new ArrayList<>();
         msgs.add("");
-        
+
         int index = 0;
 
         for (Chatter chatter : chatters) {
@@ -94,13 +107,6 @@ public class MasspingCommand implements Command {
             }
         }
 
-        for (String msg : msgs) {
-            Huinyabot.getInstance().getClient().getChat().sendMessage(
-                    channel.getAliasName(),
-                    msg + msgToAnnounce
-            );
-        }
-
-        return null;
+        return Response.ofMultiple(msgs.stream().map((x) -> x + msgToAnnounce).toList());
     }
 }

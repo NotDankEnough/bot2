@@ -1,7 +1,9 @@
 package kz.ilotterytea.bot.builtin.channel;
 
+import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.CustomCommand;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
@@ -9,51 +11,61 @@ import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
-
 import org.hibernate.Session;
-
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * 'Custom command control' command.
+ *
  * @author ilotterytea
  * @since 1.1
  */
 public class CustomCommandControl implements Command {
     @Override
-    public String getNameId() { return "cmd"; }
+    public String getNameId() {
+        return "cmd";
+    }
 
     @Override
-    public int getDelay() { return 5000; }
+    public int getDelay() {
+        return 5000;
+    }
 
     @Override
-    public Permission getPermissions() { return Permission.USER; }
+    public Permission getPermissions() {
+        return Permission.USER;
+    }
 
     @Override
-    public List<String> getOptions() { return Collections.singletonList("no-mention"); }
+    public List<String> getOptions() {
+        return Collections.singletonList("no-mention");
+    }
 
     @Override
-    public List<String> getSubcommands() { return List.of("new", "edit", "delete", "rename", "copy", "toggle", "list"); }
+    public List<String> getSubcommands() {
+        return List.of("new", "edit", "delete", "rename", "copy", "toggle", "list");
+    }
 
     @Override
-    public List<String> getAliases() { return List.of("scmd", "custom", "command", "команда"); }
+    public List<String> getAliases() {
+        return List.of("scmd", "custom", "command", "команда");
+    }
 
     @Override
-    public Optional<String> run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
-    	if (message.getMessage().isEmpty()) {
-    		return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+        if (message.getMessage().isEmpty()) {
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.NO_MESSAGE
             ));
-    	}
-    	
+        }
+
         ArrayList<String> s = new ArrayList<>(List.of(message.getMessage().get().split(" ")));
 
         if (message.getSubcommandId().isEmpty()) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.NO_SUBCMD
             ));
@@ -61,14 +73,14 @@ public class CustomCommandControl implements Command {
 
         if (message.getSubcommandId().get().equals("list")) {
             if (channel.getCommands().isEmpty()) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_CMD_NOCMDS,
                         channel.getAliasName()
                 ));
             }
 
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_CMD_SUCCESS_LIST,
                     channel.getAliasName(),
@@ -77,7 +89,7 @@ public class CustomCommandControl implements Command {
         }
 
         if (Objects.equals(s.get(0), "")) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.NOT_ENOUGH_ARGS
             ));
@@ -86,14 +98,14 @@ public class CustomCommandControl implements Command {
 
         final String name = s.get(0);
         s.remove(0);
-        
+
         // If the command was run by a broadcaster:
         if (permission.getPermission().getValue() >= Permission.BROADCASTER.getValue()) {
             Optional<CustomCommand> optionalCustomCommands = channel.getCommands().stream().filter(c -> c.getName().equals(name)).findFirst();
             String response = String.join(" ", s);
 
             if (Objects.equals(response, "")) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_CMD_NOSECONDARG
                 ));
@@ -103,7 +115,7 @@ public class CustomCommandControl implements Command {
             if (message.getSubcommandId().get().equals("new")) {
                 // Check if a command with the same name already exists:
                 if (optionalCustomCommands.isPresent() || Huinyabot.getInstance().getLoader().getCommand(name).isPresent()) {
-                    return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                    return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                             channel.getPreferences().getLanguage(),
                             LineIds.C_CMD_ALREADYEXISTS,
                             name
@@ -118,7 +130,7 @@ public class CustomCommandControl implements Command {
                 session.persist(channel);
                 session.persist(command);
 
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_CMD_SUCCESS_NEW,
                         command.getName()
@@ -127,7 +139,7 @@ public class CustomCommandControl implements Command {
 
             // If the command not exists:
             if (optionalCustomCommands.isEmpty()) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_CMD_DOESNOTEXISTS,
                         name
@@ -145,7 +157,7 @@ public class CustomCommandControl implements Command {
                     // Saving changes:
                     session.persist(command);
 
-                    return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                    return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                             channel.getPreferences().getLanguage(),
                             LineIds.C_CMD_SUCCESS_EDIT,
                             command.getName()
@@ -156,7 +168,7 @@ public class CustomCommandControl implements Command {
                     // Deleting a command and saving changes:
                     session.remove(command);
 
-                    return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                    return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                             channel.getPreferences().getLanguage(),
                             LineIds.C_CMD_SUCCESS_DELETE,
                             command.getName()
@@ -173,7 +185,7 @@ public class CustomCommandControl implements Command {
                     // Saving changes:
                     session.persist(command);
 
-                    return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                    return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                             channel.getPreferences().getLanguage(),
                             LineIds.C_CMD_SUCCESS_RENAME,
                             previousName,
@@ -184,6 +196,6 @@ public class CustomCommandControl implements Command {
             }
         }
 
-        return Optional.empty();
+        return Response.ofNothing();
     }
 }

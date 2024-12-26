@@ -1,8 +1,10 @@
 package kz.ilotterytea.bot.builtin.misc;
 
+import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
@@ -13,43 +15,52 @@ import kz.ilotterytea.bot.utils.ParsedMessage;
 import kz.ilotterytea.bot.utils.StringUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
+import org.hibernate.Session;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
-import org.hibernate.Session;
 
 /**
  * Ping command.
+ *
  * @author ilotterytea
  * @since 1.0
  */
 public class PingCommand implements Command {
     @Override
-    public String getNameId() { return "ping"; }
+    public String getNameId() {
+        return "ping";
+    }
 
     @Override
-    public int getDelay() { return 5000; }
+    public int getDelay() {
+        return 5000;
+    }
 
     @Override
-    public Permission getPermissions() { return Permission.USER; }
+    public Permission getPermissions() {
+        return Permission.USER;
+    }
 
     @Override
-    public List<String> getOptions() { return Collections.emptyList(); }
+    public List<String> getOptions() {
+        return Collections.emptyList();
+    }
 
     @Override
-    public List<String> getSubcommands() { return Collections.emptyList(); }
+    public List<String> getSubcommands() {
+        return Collections.emptyList();
+    }
 
     @Override
-    public List<String> getAliases() { return List.of("pong", "пинг", "понг"); }
+    public List<String> getAliases() {
+        return List.of("pong", "пинг", "понг");
+    }
 
     @Override
-    public Optional<String> run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
 
         String ut = StringUtils.formatTimestamp(uptime / 1000);
@@ -64,7 +75,7 @@ public class PingCommand implements Command {
         // Getting info about Stats:
         String statsStatus;
 
-        try (Response response = client.newCall(new Request.Builder()
+        try (okhttp3.Response response = client.newCall(new Request.Builder()
                 .get()
                 .url(SharedConstants.STATS_URL + "/api/v1/health")
                 .build()
@@ -79,7 +90,7 @@ public class PingCommand implements Command {
             statsStatus = "N/A";
         }
 
-        return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+        return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                 channel.getPreferences().getLanguage(),
                 LineIds.C_PING_SUCCESS,
                 System.getProperty("java.version"),
@@ -89,10 +100,10 @@ public class PingCommand implements Command {
                 String.valueOf(Math.round(totalMemMb)),
                 String.valueOf(Huinyabot.getInstance().getClient().getChat().getLatency()),
                 (SevenTVEventAPIClient.getInstance().isClosed()) ?
-        Huinyabot.getInstance().getLocale().literalText(
-                channel.getPreferences().getLanguage(),
-                LineIds.DISCON
-        ):Huinyabot.getInstance().getLocale().literalText(
+                        Huinyabot.getInstance().getLocale().literalText(
+                                channel.getPreferences().getLanguage(),
+                                LineIds.DISCON
+                        ) : Huinyabot.getInstance().getLocale().literalText(
                         channel.getPreferences().getLanguage(),
                         LineIds.CON
                 ),

@@ -3,6 +3,7 @@ package kz.ilotterytea.bot.builtin.events;
 import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.events.EventFlag;
@@ -23,33 +24,46 @@ import java.util.stream.Collectors;
 
 /**
  * Notify command.
+ *
  * @author ilotterytea
  * @since 1.6
  */
 public class NotifyCommand implements Command {
     @Override
-    public String getNameId() { return "notify"; }
+    public String getNameId() {
+        return "notify";
+    }
 
     @Override
-    public int getDelay() { return 5000; }
+    public int getDelay() {
+        return 5000;
+    }
 
     @Override
-    public Permission getPermissions() { return Permission.USER; }
+    public Permission getPermissions() {
+        return Permission.USER;
+    }
 
     @Override
-    public List<String> getOptions() { return Collections.emptyList(); }
+    public List<String> getOptions() {
+        return Collections.emptyList();
+    }
 
     @Override
-    public List<String> getSubcommands() { return List.of("sub", "unsub", "list", "subs"); }
+    public List<String> getSubcommands() {
+        return List.of("sub", "unsub", "list", "subs");
+    }
 
     @Override
-    public List<String> getAliases() { return Collections.singletonList("n"); }
+    public List<String> getAliases() {
+        return Collections.singletonList("n");
+    }
 
     @Override
-    public Optional<String> run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
         //
         if (message.getSubcommandId().isEmpty()) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.NO_SUBCMD
             ));
@@ -61,13 +75,13 @@ public class NotifyCommand implements Command {
             List<Event> events = channel.getEvents().stream().filter(it -> !it.getFlags().contains(EventFlag.NON_SUBSCRIPTION)).collect(Collectors.toList());
 
             if (events.isEmpty()) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_NOTIFY_NOEVENTS
                 ));
             }
 
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_NOTIFY_LIST,
                     events.stream().map(it -> {
@@ -84,13 +98,13 @@ public class NotifyCommand implements Command {
             List<EventSubscription> eventSubscriptions = new ArrayList<>(user.getSubscriptions());
 
             if (eventSubscriptions.isEmpty()) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_NOTIFY_NOSUBS
                 ));
             }
 
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_NOTIFY_SUBS,
                     eventSubscriptions.stream().map(it -> {
@@ -105,7 +119,7 @@ public class NotifyCommand implements Command {
 
         // Clauses that requires a message
         if (message.getMessage().isEmpty()) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.NO_MESSAGE
             ));
@@ -138,7 +152,7 @@ public class NotifyCommand implements Command {
                     ).execute().getUsers();
 
                     if (users.isEmpty()) {
-                        return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                        return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                                 channel.getPreferences().getLanguage(),
                                 LineIds.NO_TWITCH_USER
                         ));
@@ -148,7 +162,7 @@ public class NotifyCommand implements Command {
                 } catch (Exception e) {
                     e.printStackTrace();
 
-                    return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                    return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                             channel.getPreferences().getLanguage(),
                             LineIds.SOMETHING_WENT_WRONG
                     ));
@@ -174,7 +188,7 @@ public class NotifyCommand implements Command {
                 .findFirst();
 
         if (optionalEvent.isEmpty()) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_NOTIFY_NOTEXISTS,
                     formattedEventName
@@ -189,14 +203,14 @@ public class NotifyCommand implements Command {
 
         if (subcommandId.equals("sub")) {
             if (optionalEventSubscription.isPresent()) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_NOTIFY_SUBALREADY
                 ));
             }
 
             if (event1.getFlags().contains(EventFlag.NON_SUBSCRIPTION)) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_NOTIFY_NOTAVAILABLE
                 ));
@@ -210,7 +224,7 @@ public class NotifyCommand implements Command {
             session.merge(user);
             session.merge(event1);
 
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_NOTIFY_SUB,
                     formattedEventName
@@ -219,7 +233,7 @@ public class NotifyCommand implements Command {
 
         if (subcommandId.equals("unsub")) {
             if (optionalEventSubscription.isEmpty()) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_NOTIFY_NOTSUBBED
                 ));
@@ -227,13 +241,13 @@ public class NotifyCommand implements Command {
 
             session.remove(optionalEventSubscription.get());
 
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_NOTIFY_UNSUB,
                     formattedEventName
             ));
         }
 
-        return Optional.empty();
+        return Response.ofNothing();
     }
 }

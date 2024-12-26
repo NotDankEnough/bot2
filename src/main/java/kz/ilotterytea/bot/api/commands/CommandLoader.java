@@ -1,22 +1,21 @@
 package kz.ilotterytea.bot.api.commands;
 
+import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.entities.Action;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.utils.ParsedMessage;
-
 import org.hibernate.Session;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
-
 import java.util.*;
 
 /**
  * Command loader.
+ *
  * @author ilotterytea
  * @since 1.0
  */
@@ -46,9 +45,10 @@ public class CommandLoader extends ClassLoader {
 
     /**
      * Register the command.
-     * @since 1.0
-     * @author ilotterytea
+     *
      * @param command Command.
+     * @author ilotterytea
+     * @since 1.0
      */
     public void register(Command command) {
         COMMANDS.put(command.getNameId(), command);
@@ -57,12 +57,13 @@ public class CommandLoader extends ClassLoader {
 
     /**
      * Call the command.
-     * @since 1.0
-     * @author ilotterytea
+     *
      * @return response
+     * @author ilotterytea
+     * @since 1.0
      */
-    public Optional<String> call(String nameId, Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
-        Optional<String> response = Optional.empty();
+    public Optional<Response> call(String nameId, Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+        Optional<Response> response = Optional.empty();
 
         if (COMMANDS.containsKey(nameId)) {
             Command cmd = COMMANDS.get(nameId);
@@ -97,7 +98,7 @@ public class CommandLoader extends ClassLoader {
             session.merge(user);
 
             try {
-                response = cmd.run(session, event, message, channel, user, permission);
+                response = Optional.of(cmd.run(session, event, message, channel, user, permission));
             } catch (Exception e) {
                 LOGGER.error(String.format("Error occurred while running the %s command", nameId), e);
             }
@@ -112,9 +113,12 @@ public class CommandLoader extends ClassLoader {
 
     /**
      * Get the loaded commands.
-     * @since 1.0
-     * @author ilotterytea
+     *
      * @return a map of the commands.
+     * @author ilotterytea
+     * @since 1.0
      */
-    public Map<String, Command> getCommands() { return COMMANDS; }
+    public Map<String, Command> getCommands() {
+        return COMMANDS;
+    }
 }

@@ -3,50 +3,62 @@ package kz.ilotterytea.bot.builtin.channel;
 import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.Timer;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
-import kz.ilotterytea.bot.utils.HibernateUtil;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 import org.hibernate.Session;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Timer command.
+ *
  * @author ilotterytea
  * @since 1.5
  */
 public class TimerCommand implements Command {
     @Override
-    public String getNameId() { return "timer"; }
+    public String getNameId() {
+        return "timer";
+    }
 
     @Override
-    public int getDelay() { return 5000; }
+    public int getDelay() {
+        return 5000;
+    }
 
     @Override
-    public Permission getPermissions() { return Permission.BROADCASTER; }
+    public Permission getPermissions() {
+        return Permission.BROADCASTER;
+    }
 
     @Override
-    public List<String> getOptions() { return Collections.emptyList(); }
+    public List<String> getOptions() {
+        return Collections.emptyList();
+    }
 
     @Override
-    public List<String> getSubcommands() { return List.of("new", "delete", "message", "interval", "list", "info"); }
+    public List<String> getSubcommands() {
+        return List.of("new", "delete", "message", "interval", "list", "info");
+    }
 
     @Override
-    public List<String> getAliases() { return Collections.emptyList(); }
+    public List<String> getAliases() {
+        return Collections.emptyList();
+    }
 
     @Override
-    public Optional<String> run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
         if (message.getSubcommandId().isEmpty()) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.NO_SUBCMD
             ));
@@ -57,7 +69,7 @@ public class TimerCommand implements Command {
                 .getResultList();
 
         if (message.getSubcommandId().get().equals("list")) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_TIMER_LIST,
                     channel.getAliasName(),
@@ -66,7 +78,7 @@ public class TimerCommand implements Command {
         }
 
         if (message.getMessage().isEmpty()) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.NO_MESSAGE
             ));
@@ -79,7 +91,7 @@ public class TimerCommand implements Command {
 
         if (message.getSubcommandId().get().equals("new")) {
             if (timers.stream().anyMatch(t -> t.getName().equals(timerId))) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_TIMER_ALREADYEXISTS,
                         timerId
@@ -87,7 +99,7 @@ public class TimerCommand implements Command {
             }
 
             if (s.isEmpty() || s.size() < 2) {
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                         channel.getPreferences().getLanguage(),
                         LineIds.NO_MESSAGE
                 ));
@@ -98,8 +110,8 @@ public class TimerCommand implements Command {
             try {
                 intervalMs = Integer.parseInt(s.get(0));
                 s.remove(0);
-            } catch (NumberFormatException e){
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            } catch (NumberFormatException e) {
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_TIMER_NOTANINTERVAL,
                         s.get(0)
@@ -112,7 +124,7 @@ public class TimerCommand implements Command {
             session.persist(timer);
             session.merge(channel);
 
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_TIMER_NEW,
                     timerId
@@ -120,7 +132,7 @@ public class TimerCommand implements Command {
         }
 
         if (timers.stream().noneMatch(t -> t.getName().equals(timerId))) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.C_TIMER_NOTEXISTS,
                     timerId
@@ -133,13 +145,13 @@ public class TimerCommand implements Command {
             case "delete":
                 session.remove(timer);
 
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_TIMER_DELETE,
                         timerId
                 ));
             case "info":
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_TIMER_INFO,
                         timerId,
@@ -151,7 +163,7 @@ public class TimerCommand implements Command {
         }
 
         if (s.isEmpty()) {
-            return Optional.ofNullable(Huinyabot.getInstance().getLocale().literalText(
+            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
                     LineIds.NO_MESSAGE
             ));
@@ -165,7 +177,7 @@ public class TimerCommand implements Command {
 
                 session.persist(timer);
 
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_TIMER_MESSAGE,
                         timerId
@@ -176,7 +188,7 @@ public class TimerCommand implements Command {
                 try {
                     interval = Integer.parseInt(msg);
                 } catch (NumberFormatException e) {
-                    return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                    return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                             channel.getPreferences().getLanguage(),
                             LineIds.C_TIMER_NOTANINTERVAL,
                             msg
@@ -187,7 +199,7 @@ public class TimerCommand implements Command {
 
                 session.persist(timer);
 
-                return Optional.ofNullable(Huinyabot.getInstance().getLocale().formattedText(
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
                         LineIds.C_TIMER_INTERVAL,
                         timerId
@@ -196,6 +208,6 @@ public class TimerCommand implements Command {
                 break;
         }
 
-        return Optional.empty();
+        return Response.ofNothing();
     }
 }
