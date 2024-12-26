@@ -1,6 +1,6 @@
 package kz.ilotterytea.bot.api.commands;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
+import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import kz.ilotterytea.bot.entities.users.User;
@@ -9,7 +9,7 @@ import org.hibernate.Session;
 
 public class Request {
     private final Session session;
-    private final IRCMessageEvent event;
+    private final ChannelMessageEvent event;
     private final ParsedMessage message;
 
     private final Channel channel;
@@ -18,7 +18,7 @@ public class Request {
 
     public Request(
             Session session,
-            IRCMessageEvent event,
+            ChannelMessageEvent event,
             ParsedMessage message,
             Channel channel,
             User user,
@@ -36,7 +36,7 @@ public class Request {
         return session;
     }
 
-    public IRCMessageEvent getEvent() {
+    public ChannelMessageEvent getEvent() {
         return event;
     }
 

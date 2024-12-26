@@ -83,7 +83,7 @@ public class CommandLoader extends ClassLoader {
                 return Optional.empty();
             }
 
-            Action action = new Action(request.getUser(), request.getChannel(), cmd.getNameId(), request.getEvent().getMessage().get());
+            Action action = new Action(request.getUser(), request.getChannel(), cmd.getNameId(), request.getEvent().getMessage());
             request.getChannel().addAction(action);
             request.getUser().addAction(action);
 

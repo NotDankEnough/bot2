@@ -1,6 +1,6 @@
 package kz.ilotterytea.bot.handlers;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
+import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.api.commands.CommandException;
 import kz.ilotterytea.bot.api.commands.Request;
@@ -38,11 +38,7 @@ public class MessageHandlerSamples {
      * @author ilotterytea
      * @since 1.0
      */
-    public static void ircMessageEvent(IRCMessageEvent e) {
-        if (e.getMessage().isEmpty()) {
-            return;
-        }
-
+    public static void channelMessageEvent(ChannelMessageEvent e) {
         Session session = HibernateUtil.getSessionFactory().openSession();
         session.getTransaction().begin();
 
@@ -121,9 +117,9 @@ public class MessageHandlerSamples {
 
         if (Objects.equals(e.getChannel().getId(), e.getUser().getId())) {
             userPermission.setPermission(Permission.BROADCASTER);
-        } else if (e.getBadges().containsKey("moderator")) {
+        } else if (e.getMessageEvent().getBadges().containsKey("moderator")) {
             userPermission.setPermission(Permission.MOD);
-        } else if (e.getBadges().containsKey("vip")) {
+        } else if (e.getMessageEvent().getBadges().containsKey("vip")) {
             userPermission.setPermission(Permission.VIP);
         } else {
             userPermission.setPermission(Permission.USER);
@@ -131,10 +127,10 @@ public class MessageHandlerSamples {
 
         session.persist(userPermission);
 
-        String MSG = e.getMessage().get();
+        String msg = e.getMessage();
         session.getTransaction().commit();
 
-        final Optional<ParsedMessage> parsedMessage = ParsedMessage.parse(MSG, channel.getPreferences().getPrefix());
+        final Optional<ParsedMessage> parsedMessage = ParsedMessage.parse(msg, channel.getPreferences().getPrefix());
 
         // Processing the command:
         if (parsedMessage.isPresent()) {
@@ -190,13 +186,13 @@ public class MessageHandlerSamples {
         // Processing the custom commands:
         List<CustomCommand> commands = session.createQuery("from CustomCommand where channel = :channel AND name = :name AND isEnabled = true", CustomCommand.class)
                 .setParameter("channel", channel)
-                .setParameter("name", MSG)
+                .setParameter("name", msg)
                 .getResultList();
 
         if (!commands.isEmpty()) {
             for (CustomCommand command : commands) {
                 bot.getClient().getChat().sendMessage(
-                        e.getChannel().getName(),
+                        channel.getAliasName(),
                         command.getMessage()
                 );
             }

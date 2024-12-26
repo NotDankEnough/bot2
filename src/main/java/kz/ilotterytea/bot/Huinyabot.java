@@ -3,7 +3,7 @@ package kz.ilotterytea.bot;
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.TwitchClientBuilder;
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
+import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import com.github.twitch4j.helix.domain.User;
@@ -21,12 +21,13 @@ import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
 import java.net.URISyntaxException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Bot.
+ *
  * @author ilotterytea
  * @since 1.0
  */
@@ -39,14 +40,31 @@ public class Huinyabot extends Bot {
 
     private final Logger LOGGER = LoggerFactory.getLogger(Huinyabot.class);
 
-    public TwitchClient getClient() { return client; }
-    public CommandLoader getLoader() { return loader; }
-    public OAuth2Credential getCredential() { return credential; }
-    public I18N getLocale() { return i18N; }
+    public TwitchClient getClient() {
+        return client;
+    }
+
+    public CommandLoader getLoader() {
+        return loader;
+    }
+
+    public OAuth2Credential getCredential() {
+        return credential;
+    }
+
+    public I18N getLocale() {
+        return i18N;
+    }
 
     private static Huinyabot instance;
-    public static Huinyabot getInstance() { return instance; }
-    public Huinyabot() { instance = this; }
+
+    public static Huinyabot getInstance() {
+        return instance;
+    }
+
+    public Huinyabot() {
+        instance = this;
+    }
 
     @Override
     public void init() {
@@ -173,7 +191,7 @@ public class Huinyabot extends Bot {
             }
         }, 2500, 2500);
 
-        client.getEventManager().onEvent(IRCMessageEvent.class, MessageHandlerSamples::ircMessageEvent);
+        client.getEventManager().onEvent(ChannelMessageEvent.class, MessageHandlerSamples::channelMessageEvent);
 
         // Handling stream events:
         client.getEventManager().onEvent(ChannelGoLiveEvent.class, StreamEventHandlers::handleGoLiveEvent);
