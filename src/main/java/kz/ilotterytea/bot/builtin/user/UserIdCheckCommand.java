@@ -8,7 +8,6 @@ import kz.ilotterytea.bot.api.commands.Command;
 import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
-import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.models.serverresponse.ivr.UserInfo;
 import kz.ilotterytea.bot.utils.ParsedMessage;
@@ -32,23 +31,8 @@ public class UserIdCheckCommand implements Command {
     }
 
     @Override
-    public int getDelay() {
-        return 5000;
-    }
-
-    @Override
-    public Permission getPermissions() {
-        return Permission.USER;
-    }
-
-    @Override
     public List<String> getOptions() {
         return Collections.singletonList("login");
-    }
-
-    @Override
-    public List<String> getSubcommands() {
-        return Collections.emptyList();
     }
 
     @Override

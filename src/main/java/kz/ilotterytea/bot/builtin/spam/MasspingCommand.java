@@ -12,7 +12,6 @@ import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,16 +34,6 @@ public class MasspingCommand implements Command {
     @Override
     public Permission getPermissions() {
         return Permission.BROADCASTER;
-    }
-
-    @Override
-    public List<String> getOptions() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<String> getSubcommands() {
-        return Collections.emptyList();
     }
 
     @Override

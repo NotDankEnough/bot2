@@ -9,7 +9,6 @@ import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.events.EventFlag;
 import kz.ilotterytea.bot.entities.events.EventType;
 import kz.ilotterytea.bot.entities.events.subscriptions.EventSubscription;
-import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
@@ -32,22 +31,7 @@ public class NotifyCommand implements Command {
     public String getNameId() {
         return "notify";
     }
-
-    @Override
-    public int getDelay() {
-        return 5000;
-    }
-
-    @Override
-    public Permission getPermissions() {
-        return Permission.USER;
-    }
-
-    @Override
-    public List<String> getOptions() {
-        return Collections.emptyList();
-    }
-
+    
     @Override
     public List<String> getSubcommands() {
         return List.of("sub", "unsub", "list", "subs");

@@ -8,7 +8,6 @@ import kz.ilotterytea.bot.api.commands.Command;
 import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
-import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.models.serverresponse.Emote;
 import kz.ilotterytea.bot.models.serverresponse.ServerPayload;
@@ -28,26 +27,6 @@ public class EmoteCountCommand implements Command {
     @Override
     public String getNameId() {
         return "ecount";
-    }
-
-    @Override
-    public int getDelay() {
-        return 5000;
-    }
-
-    @Override
-    public Permission getPermissions() {
-        return Permission.USER;
-    }
-
-    @Override
-    public List<String> getOptions() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<String> getSubcommands() {
-        return Collections.emptyList();
     }
 
     @Override

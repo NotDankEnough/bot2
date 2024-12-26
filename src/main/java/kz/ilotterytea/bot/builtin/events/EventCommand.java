@@ -43,11 +43,6 @@ public class EventCommand implements Command {
     }
 
     @Override
-    public List<String> getOptions() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public List<String> getSubcommands() {
         return List.of("on", "off", "list", "flag", "call");
     }

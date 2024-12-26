@@ -42,11 +42,6 @@ public class SpamCommand implements Command {
     }
 
     @Override
-    public List<String> getSubcommands() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public List<String> getAliases() {
         return List.of("спам", "насрать", "repeat", "cv", "paste", "cvpaste");
     }

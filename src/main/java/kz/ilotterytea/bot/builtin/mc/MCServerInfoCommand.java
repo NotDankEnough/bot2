@@ -7,14 +7,12 @@ import kz.ilotterytea.bot.api.commands.Command;
 import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
-import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.models.serverresponse.mc.ServerInfo;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 import okhttp3.OkHttpClient;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,26 +25,6 @@ public class MCServerInfoCommand implements Command {
     @Override
     public String getNameId() {
         return "mcserver";
-    }
-
-    @Override
-    public int getDelay() {
-        return 5000;
-    }
-
-    @Override
-    public Permission getPermissions() {
-        return Permission.USER;
-    }
-
-    @Override
-    public List<String> getOptions() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<String> getSubcommands() {
-        return Collections.emptyList();
     }
 
     @Override

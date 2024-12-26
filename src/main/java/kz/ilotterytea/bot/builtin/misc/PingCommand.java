@@ -5,7 +5,6 @@ import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
 import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
-import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.thirdpartythings.seventv.eventapi.SevenTVEventAPIClient;
 import kz.ilotterytea.bot.utils.StringUtils;
@@ -13,7 +12,6 @@ import okhttp3.OkHttpClient;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,26 +24,6 @@ public class PingCommand implements Command {
     @Override
     public String getNameId() {
         return "ping";
-    }
-
-    @Override
-    public int getDelay() {
-        return 5000;
-    }
-
-    @Override
-    public Permission getPermissions() {
-        return Permission.USER;
-    }
-
-    @Override
-    public List<String> getOptions() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<String> getSubcommands() {
-        return Collections.emptyList();
     }
 
     @Override

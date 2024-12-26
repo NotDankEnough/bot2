@@ -6,7 +6,6 @@ import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
-import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
 import org.hibernate.Session;
@@ -32,18 +31,8 @@ public class JoinCommand implements Command {
     }
 
     @Override
-    public Permission getPermissions() {
-        return Permission.USER;
-    }
-
-    @Override
     public List<String> getOptions() {
         return List.of("silent", "тихо", "only-listen");
-    }
-
-    @Override
-    public List<String> getSubcommands() {
-        return Collections.emptyList();
     }
 
     @Override

@@ -11,7 +11,6 @@ import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 import org.hibernate.Session;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,28 +26,13 @@ public class SetterCommand implements Command {
     }
 
     @Override
-    public int getDelay() {
-        return 5000;
-    }
-
-    @Override
     public Permission getPermissions() {
         return Permission.BROADCASTER;
     }
 
     @Override
-    public List<String> getOptions() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public List<String> getSubcommands() {
         return List.of("prefix", "locale");
-    }
-
-    @Override
-    public List<String> getAliases() {
-        return Collections.emptyList();
     }
 
     @Override

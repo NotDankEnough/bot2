@@ -27,16 +27,6 @@ public class CustomCommandControl implements Command {
     }
 
     @Override
-    public int getDelay() {
-        return 5000;
-    }
-
-    @Override
-    public Permission getPermissions() {
-        return Permission.USER;
-    }
-
-    @Override
     public List<String> getOptions() {
         return Collections.singletonList("no-mention");
     }

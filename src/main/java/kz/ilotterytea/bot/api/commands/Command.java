@@ -27,35 +27,45 @@ public interface Command {
      * @author ilotterytea
      * @since 1.0
      */
-    int getDelay();
+    default int getDelay() {
+        return 5000;
+    }
 
     /**
      * Get the ID of minimal permissions to run the command.
      *
      * @return permission ID.
      */
-    Permission getPermissions();
+    default Permission getPermissions() {
+        return Permission.USER;
+    }
 
     /**
      * Get the names of the options that should be used in the command.
      *
      * @return array list of option names.
      */
-    List<String> getOptions();
+    default List<String> getOptions() {
+        return List.of();
+    }
 
     /**
      * Get the names of the subcommands that should be used in the command.
      *
      * @return array list of subcommand names.
      */
-    List<String> getSubcommands();
+    default List<String> getSubcommands() {
+        return List.of();
+    }
 
     /**
      * Get command alias names.
      *
      * @return array list of alias names.
      */
-    List<String> getAliases();
+    default List<String> getAliases() {
+        return List.of();
+    }
 
     /**
      * Run the command.
