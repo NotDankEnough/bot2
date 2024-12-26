@@ -68,6 +68,15 @@ public interface Command {
     }
 
     /**
+     * Get command required arguments.
+     *
+     * @return array list of required arguments.
+     */
+    default List<CommandArgument> getRequiredArguments() {
+        return List.of();
+    }
+
+    /**
      * Run the command.
      *
      * @return response.
