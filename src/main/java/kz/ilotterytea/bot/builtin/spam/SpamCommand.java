@@ -1,12 +1,8 @@
 package kz.ilotterytea.bot.builtin.spam;
 
-import kz.ilotterytea.bot.Huinyabot;
-import kz.ilotterytea.bot.api.commands.Command;
-import kz.ilotterytea.bot.api.commands.Request;
-import kz.ilotterytea.bot.api.commands.Response;
+import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 
 import java.util.ArrayList;
@@ -52,10 +48,7 @@ public class SpamCommand implements Command {
         Channel channel = request.getChannel();
 
         if (message.getMessage().isEmpty() || message.getMessage().get().split(" ").length == 1) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.MESSAGE);
         }
 
         final int MAX_COUNT = 8;
@@ -66,10 +59,7 @@ public class SpamCommand implements Command {
             count = Integer.parseInt(s.get(0));
             s.remove(0);
         } catch (NumberFormatException e) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.C_SPAM_NOCOUNT
-            ));
+            count = MAX_COUNT;
         }
 
         if (count > MAX_COUNT) {

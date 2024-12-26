@@ -2,6 +2,7 @@ package kz.ilotterytea.bot.handlers;
 
 import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
+import kz.ilotterytea.bot.api.commands.CommandException;
 import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.CustomCommand;
@@ -10,6 +11,7 @@ import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
 import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import kz.ilotterytea.bot.entities.users.UserPreferences;
+import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.HibernateUtil;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 import org.hibernate.Session;
@@ -146,18 +148,38 @@ public class MessageHandlerSamples {
                     userPermission
             );
 
-            Optional<Response> responseOptional = bot.getLoader().call(request);
+            try {
+                Optional<Response> responseOptional = bot.getLoader().call(request);
 
-            if (responseOptional.isPresent()) {
-                Response response = responseOptional.get();
+                if (responseOptional.isPresent()) {
+                    Response response = responseOptional.get();
 
-                if (response.isMultiple()) {
-                    for (String message : response.getMultiple()) {
-                        bot.getClient().getChat().sendMessage(channel.getAliasName(), message);
+                    if (response.isMultiple()) {
+                        for (String message : response.getMultiple()) {
+                            bot.getClient().getChat().sendMessage(channel.getAliasName(), message);
+                        }
+                    } else if (response.isSingle()) {
+                        bot.getClient().getChat().sendMessage(channel.getAliasName(), response.getSingle());
                     }
-                } else if (response.isSingle()) {
-                    bot.getClient().getChat().sendMessage(channel.getAliasName(), response.getSingle());
                 }
+            } catch (CommandException exception) {
+                bot.getClient().getChat().sendMessage(channel.getAliasName(), bot.getLocale()
+                        .formattedText(request.getChannel().getPreferences().getLanguage(),
+                                LineIds.ERROR_TEMPLATE,
+                                request.getUser().getAliasName(),
+                                exception.getMessage()
+                        )
+                );
+                LOG.info("An error occurred while executing the command {}: {}", request.getMessage().getCommandId(), exception.getMessage());
+            } catch (Exception exception) {
+                bot.getClient().getChat().sendMessage(channel.getAliasName(), bot.getLocale()
+                        .formattedText(request.getChannel().getPreferences().getLanguage(),
+                                LineIds.ERROR_TEMPLATE,
+                                request.getUser().getAliasName(),
+                                CommandException.somethingWentWrong(request).getMessage()
+                        )
+                );
+                LOG.error("An error occurred while executing the command {}", request.getMessage().getCommandId(), exception);
             }
 
             session.getTransaction().commit();

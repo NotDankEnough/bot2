@@ -7,5 +7,6 @@ public enum CommandArgument {
     NAME,
     TARGET,
     VALUE,
-    AMOUNT
+    AMOUNT,
+    FLAG
 }

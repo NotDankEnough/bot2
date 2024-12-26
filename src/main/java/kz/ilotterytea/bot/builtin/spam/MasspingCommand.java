@@ -4,11 +4,11 @@ import com.github.twitch4j.helix.domain.Chatter;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.CommandException;
 import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class MasspingCommand implements Command {
     }
 
     @Override
-    public Response run(Request request) {
+    public Response run(Request request) throws CommandException {
         ParsedMessage message = request.getMessage();
         Channel channel = request.getChannel();
 
@@ -56,11 +56,8 @@ public class MasspingCommand implements Command {
                     null,
                     null
             ).execute().getChatters();
-        } catch (Exception e) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.C_MASSPING_NOTMOD
-            ));
+        } catch (Exception ignored) {
+            throw CommandException.insufficientRights(request);
         }
 
         String msgToAnnounce;

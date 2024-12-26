@@ -1,9 +1,7 @@
 package kz.ilotterytea.bot.builtin.channel;
 
 import kz.ilotterytea.bot.Huinyabot;
-import kz.ilotterytea.bot.api.commands.Command;
-import kz.ilotterytea.bot.api.commands.Request;
-import kz.ilotterytea.bot.api.commands.Response;
+import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.CustomCommand;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
@@ -42,25 +40,19 @@ public class CustomCommandControl implements Command {
     }
 
     @Override
-    public Response run(Request request) {
+    public Response run(Request request) throws CommandException {
         ParsedMessage message = request.getMessage();
         Channel channel = request.getChannel();
         Session session = request.getSession();
 
         if (message.getMessage().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.MESSAGE);
         }
 
         ArrayList<String> s = new ArrayList<>(List.of(message.getMessage().get().split(" ")));
 
         if (message.getSubcommandId().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_SUBCMD
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.SUBCOMMAND);
         }
 
         if (message.getSubcommandId().get().equals("list")) {
@@ -81,10 +73,7 @@ public class CustomCommandControl implements Command {
         }
 
         if (Objects.equals(s.get(0), "")) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NOT_ENOUGH_ARGS
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.VALUE);
         }
 
 
@@ -97,21 +86,14 @@ public class CustomCommandControl implements Command {
             String response = String.join(" ", s);
 
             if (Objects.equals(response, "")) {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.C_CMD_NOSECONDARG
-                ));
+                throw CommandException.notEnoughArguments(request, CommandArgument.VALUE);
             }
 
             // Create a new custom command:
             if (message.getSubcommandId().get().equals("new")) {
                 // Check if a command with the same name already exists:
                 if (optionalCustomCommands.isPresent() || Huinyabot.getInstance().getLoader().getCommand(name).isPresent()) {
-                    return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                            channel.getPreferences().getLanguage(),
-                            LineIds.C_CMD_ALREADYEXISTS,
-                            name
-                    ));
+                    throw CommandException.namesakeCreation(request, name);
                 }
 
                 // Creating a new command and assign it to the channel:
@@ -131,11 +113,7 @@ public class CustomCommandControl implements Command {
 
             // If the command not exists:
             if (optionalCustomCommands.isEmpty()) {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.C_CMD_DOESNOTEXISTS,
-                        name
-                ));
+                throw CommandException.notFound(request, name);
             }
 
             CustomCommand command = optionalCustomCommands.get();

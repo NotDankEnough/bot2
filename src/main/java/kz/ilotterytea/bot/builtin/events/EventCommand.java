@@ -3,9 +3,7 @@ package kz.ilotterytea.bot.builtin.events;
 import com.github.twitch4j.helix.domain.Chatter;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
-import kz.ilotterytea.bot.api.commands.Command;
-import kz.ilotterytea.bot.api.commands.Request;
-import kz.ilotterytea.bot.api.commands.Response;
+import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.events.EventFlag;
@@ -18,7 +16,6 @@ import org.hibernate.Session;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Event command.
@@ -53,16 +50,13 @@ public class EventCommand implements Command {
     }
 
     @Override
-    public Response run(Request request) {
+    public Response run(Request request) throws Exception {
         ParsedMessage message = request.getMessage();
         Channel channel = request.getChannel();
         Session session = request.getSession();
 
         if (message.getSubcommandId().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_SUBCMD
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.SUBCOMMAND);
         }
 
         final String subcommandId = message.getSubcommandId().get();
@@ -114,10 +108,7 @@ public class EventCommand implements Command {
         }
 
         if (message.getMessage().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.VALUE);
         }
 
         final String msg = message.getMessage().get();
@@ -139,29 +130,17 @@ public class EventCommand implements Command {
                 eventType = optionalEventType.get();
                 formattedEventName = targetAndEvent[0] + ":" + targetAndEvent[1];
 
-                try {
-                    List<com.github.twitch4j.helix.domain.User> users = Huinyabot.getInstance().getClient().getHelix().getUsers(
-                            Huinyabot.getInstance().getCredential().getAccessToken(),
-                            null,
-                            Collections.singletonList(targetAndEvent[0])
-                    ).execute().getUsers();
+                List<com.github.twitch4j.helix.domain.User> users = Huinyabot.getInstance().getClient().getHelix().getUsers(
+                        Huinyabot.getInstance().getCredential().getAccessToken(),
+                        null,
+                        Collections.singletonList(targetAndEvent[0])
+                ).execute().getUsers();
 
-                    if (users.isEmpty()) {
-                        return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                                channel.getPreferences().getLanguage(),
-                                LineIds.NO_TWITCH_USER
-                        ));
-                    }
-
-                    eventName = users.get(0).getId();
-                } catch (Exception e) {
-                    e.printStackTrace();
-
-                    return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                            channel.getPreferences().getLanguage(),
-                            LineIds.SOMETHING_WENT_WRONG
-                    ));
+                if (users.isEmpty()) {
+                    throw CommandException.notFound(request, targetAndEvent[0]);
                 }
+
+                eventName = users.get(0).getId();
             }
         } else {
             eventType = EventType.CUSTOM;
@@ -184,12 +163,7 @@ public class EventCommand implements Command {
 
         if (subcommandId.equals("off")) {
             if (optionalEvent.isEmpty()) {
-
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.C_EVENT_NOTEXISTS,
-                        formattedEventName
-                ));
+                throw CommandException.notFound(request, formattedEventName);
             }
 
             Event event1 = optionalEvent.get();
@@ -216,12 +190,7 @@ public class EventCommand implements Command {
 
         if (subcommandId.equals("call")) {
             if (optionalEvent.isEmpty()) {
-
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.C_EVENT_NOTEXISTS,
-                        formattedEventName
-                ));
+                throw CommandException.notFound(request, formattedEventName);
             }
 
             Event event1 = optionalEvent.get();
@@ -237,19 +206,15 @@ public class EventCommand implements Command {
                     .collect(Collectors.toSet());
 
             if (event1.getFlags().contains(EventFlag.MASSPING)) {
-                try {
-                    List<Chatter> chatters = Huinyabot.getInstance().getClient().getHelix().getChatters(
-                            SharedConstants.TWITCH_ACCESS_TOKEN,
-                            channel.getAliasId().toString(),
-                            Huinyabot.getInstance().getCredential().getUserId(),
-                            1000,
-                            null
-                    ).execute().getChatters();
+                List<Chatter> chatters = Huinyabot.getInstance().getClient().getHelix().getChatters(
+                        SharedConstants.TWITCH_ACCESS_TOKEN,
+                        channel.getAliasId().toString(),
+                        Huinyabot.getInstance().getCredential().getUserId(),
+                        1000,
+                        null
+                ).execute().getChatters();
 
-                    names.addAll(chatters.stream().map(Chatter::getUserLogin).collect(Collectors.toSet()));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                names.addAll(chatters.stream().map(Chatter::getUserLogin).collect(Collectors.toSet()));
             }
 
             if (names.isEmpty()) {
@@ -273,10 +238,7 @@ public class EventCommand implements Command {
         }
 
         if (msgSplit.isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.MESSAGE);
         }
 
         final String finalMsg = String.join(" ", msgSplit);
@@ -329,11 +291,7 @@ public class EventCommand implements Command {
         }
 
         if (optionalEvent.isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.C_EVENT_NOTEXISTS,
-                    formattedEventName
-            ));
+            throw CommandException.notFound(request, formattedEventName);
         }
 
         Event event1 = optionalEvent.get();
@@ -342,13 +300,7 @@ public class EventCommand implements Command {
             Optional<EventFlag> optionalEventFlag = EventFlag.findEventFlagById(finalMsg);
 
             if (optionalEventFlag.isEmpty()) {
-
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.C_EVENT_FLAGNOTEXISTS,
-                        finalMsg,
-                        Stream.of(EventFlag.values()).map(EventFlag::getName).collect(Collectors.joining())
-                ));
+                throw CommandException.incorrectArgument(request, CommandArgument.FLAG, finalMsg);
             }
 
             EventFlag eventFlag = optionalEventFlag.get();

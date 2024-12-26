@@ -1,64 +1,52 @@
 {
   "test.test": "test %s successfully completed!",
-
-  "msg.not_enough_arguments": "Not enough arguments!",
-  "msg.no_subcommand": "No subcommand!",
-  "msg.not_enough_rights": "Not enough rights to perform this action.",
-  "msg.http_response_error": "Received the %s status code while processing the %s request!",
-  "msg.something_went_wrong": "Something went wrong!",
-  "msg.unknown_subcommand": "Unknown subcommand is specified!",
-  "msg.no_message": "No message specified!",
-  "msg.no_emote_set": "No emote sets found!",
-  "msg.no_twitch_user": "No Twitch user found!",
-  "msg.same_twitch_user": "The same Twitch user is specified!",
-
+  "error.template": "%s: \uD83D\uDEA8 %s",
+  "error.not_enough_arguments": "Not enough arguments (%s)",
+  "error.incorrect_argument": "Incorrect argument (%s)",
+  "error.incompatible_name": "Incompatible name (%s)",
+  "error.namesake_creation": "Namesake creation (%s)",
+  "error.not_found": "Not found (%s)",
+  "error.something_went_wrong": "Something went wrong",
+  "error.external_api": "External API error (%s%s)",
+  "error.insufficient_rights": "Insufficient rights",
   "providers.7tv": "7TV",
   "providers.bttv": "BTTV",
   "providers.ffz": "FFZ",
   "provider.ttv": "Twitch",
-
   "placeholders.disconnected": "DISCONNECTED",
   "placeholders.connected": "CONNECTED",
   "placeholders.title_change": "Title change",
   "placeholders.went_live": "Went live",
   "placeholders.went_offline": "Went offline",
   "placeholders.game_change": "Game change",
-
   "notification.live": "%{name} is live with title \"%{title}\" on game \"%{game}\"",
   "notification.offline": "%{name} is now offline",
   "notification.title": "%{name} changed the stream title to \"%{title}\"",
   "notification.game": "%{name} changed the game to \"%{game}\"",
-
   "events.message": "\u26a1 %s",
   "events.message.suffix": " \u00b7 ",
-
   "cmd.ping.name": "Ping!",
   "cmd.ping.desc": "Check if this bot alive",
   "cmd.ping.response.success": "DankCrouching \u2615 Java %s \u00b7 Uptime: %s \u00b7 Used memory: %s% (%sMB) of %sMB \u00b7 TMI: %sms \u00b7 7TV EventAPI: %s \u00b7 Stats API: %s \u00b7 Running on v%s",
-
   "emoteupdater.new_emote_with_author": "(%s) %s added the %s emote!",
   "emoteupdater.removed_emote_with_author": "(%s) %s removed the %s emote!",
   "emoteupdater.updated_emote_with_author": "(%s) %s updated the emote name from %s to %s !",
   "emoteupdater.new_emote": "(%s) Added the %s emote!",
   "emoteupdater.removed_emote": "(%s) Removed the %s emote!",
   "emoteupdater.updated_emote": "(%s) Updated the emote name from %s to %s !",
-
   "cmd.spam.name": "Spam",
   "cmd.spam.desc": "Spam",
   "cmd.spam.response.no_msg": "No message found.",
   "cmd.spam.response.no_count": "No spam count found.",
-
   "cmd.massping.name": "Ping em, Fors!",
   "cmd.massping.desc": "",
   "cmd.massping.response.not_a_moderator": "Couldn't get a list of chatters. Did you make me a moderator? \uD83E\uDD14 ",
-
   "cmd.join.name": "Join",
   "cmd.join.desc": "join",
   "cmd.join.response.not_found": "User with username %s is not found!",
   "cmd.join.response.already_in": "The user %s is already in!",
   "cmd.join.response.success": "Successfully joined to the %s's chat room!",
   "cmd.join.response.success_to_joined_chat": "@%s, FeelsDankMan \uD83D\uDC4B joined your chat room!",
-
   "cmd.holiday.name": "Holiday!",
   "cmd.holiday.desc": "holiday!",
   "cmd.holiday.response.success": "HolidayPresent %s Holiday on %s (%s of %s): %s",
@@ -66,19 +54,16 @@
   "cmd.holiday.response.no_search_query": "No search query!",
   "cmd.holiday.response.query_success": "HolidayPresent %s holidays on query \"%s\": %s",
   "cmd.holiday.response.query_not_found": "There are no holidays for the query \"%s\"!",
-
   "cmd.ecount.name": "Emote count!",
   "cmd.ecount.desc": "emote count",
   "cmd.ecount.response.no_emote_provided": "(%s) No emote provided.",
   "cmd.ecount.response.no_emote_found": "(%s) Emote %s is not found in the database.",
   "cmd.ecount.response.no_channel_emotes": "(%s) The %s emotes were not detected.",
   "cmd.ecount.response.success": "(%s) %s %s has been used %s times, ranking #%s among %s emotes.",
-
   "cmd.etop.name": "Emote top",
   "cmd.etop.desc": "emote top",
   "cmd.etop.response.no_channel_emotes": "(%s) The %s emotes were not detected.",
   "cmd.etop.response.success": "(%s) %s",
-
   "cmd.cmd.name": "Custom commands!",
   "cmd.cmd.desc": "custom commands",
   "cmd.cmd.response.no_second_arg": "The second argument was not found.",
@@ -94,7 +79,6 @@
   "cmd.cmd.response.success.copy": "Successfully copied the command %s from %s's chat room!",
   "cmd.cmd.response.success.disable": "Successfully disabled the command %s",
   "cmd.cmd.response.success.enable": "Successfully enabled the command %s",
-
   "cmd.notify.name": "Notify me!",
   "cmd.notify.desc": "Notify",
   "cmd.notify.response.sub.already": "You are already subscribed to this event!",
@@ -108,7 +92,6 @@
   "cmd.notify.response.not_exists": "The event \"%s\" does not exist in this chat.",
   "cmd.notify.response.not_subbed": "You are not subscribed to this event.",
   "cmd.notify.response.not_available": "This event is not available for subscription.",
-
   "cmd.set.name": "Settings",
   "cmd.set.desc": "settings",
   "cmd.set.response.success.prefix.info": "The bot prefix for this chat: \"%s\"",
@@ -119,13 +102,10 @@
   "cmd.set.response.success.locale.set.user": "I now speak English to you KKona",
   "cmd.set.response.success.7tv.enabled": "(7TV) This chat will receive notifications about 7TV events!",
   "cmd.set.response.success.7tv.disabled": "(7TV) This chat will no longer receive notifications about 7TV events!",
-
   "cmd.esimilarity.response.success": "(%s) %s's emote set is %s% similar to %s's emote set (%s of %s)",
   "cmd.esimilarity.response.no_similarity": "(%s) %s's emote set is not similar to %s's emote set",
-
   "cmd.mcserver.response.success": "✅ %s | \"%s\" | %s players out of %s | %s",
   "cmd.mcserver.response.server_is_offline": "⛔ %s | OFFLINE",
-
   "cmd.timer.response.list": "Active %s's channel timers: %s",
   "cmd.timer.response.already_exists": "The timer \"%s\" already exists!",
   "cmd.timer.response.not_exists": "There is no timer named \"%s\"!",
@@ -135,7 +115,6 @@
   "cmd.timer.response.message": "Successfully edited message for timer \"%s\"!",
   "cmd.timer.response.interval": "Successfully edited interval for timer \"%s\"!",
   "cmd.timer.response.not_an_interval": "The specified interval (%s) is not a number!",
-
   "cmd.event.name": "Event",
   "cmd.event.desc": "Event",
   "cmd.event.response.no_events": "There are no active events on this channel.",

@@ -1,9 +1,7 @@
 package kz.ilotterytea.bot.builtin.events;
 
 import kz.ilotterytea.bot.Huinyabot;
-import kz.ilotterytea.bot.api.commands.Command;
-import kz.ilotterytea.bot.api.commands.Request;
-import kz.ilotterytea.bot.api.commands.Response;
+import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.events.EventFlag;
@@ -31,7 +29,7 @@ public class NotifyCommand implements Command {
     public String getNameId() {
         return "notify";
     }
-    
+
     @Override
     public List<String> getSubcommands() {
         return List.of("sub", "unsub", "list", "subs");
@@ -50,10 +48,7 @@ public class NotifyCommand implements Command {
         Session session = request.getSession();
 
         if (message.getSubcommandId().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_SUBCMD
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.SUBCOMMAND);
         }
 
         final String subcommandId = message.getSubcommandId().get();
@@ -106,10 +101,7 @@ public class NotifyCommand implements Command {
 
         // Clauses that requires a message
         if (message.getMessage().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.VALUE);
         }
 
         final String msg = message.getMessage().get();
@@ -131,29 +123,17 @@ public class NotifyCommand implements Command {
                 eventType = optionalEventType.get();
                 formattedEventName = targetAndEvent[0] + ":" + targetAndEvent[1];
 
-                try {
-                    List<com.github.twitch4j.helix.domain.User> users = Huinyabot.getInstance().getClient().getHelix().getUsers(
-                            Huinyabot.getInstance().getCredential().getAccessToken(),
-                            null,
-                            Collections.singletonList(targetAndEvent[0])
-                    ).execute().getUsers();
+                List<com.github.twitch4j.helix.domain.User> users = Huinyabot.getInstance().getClient().getHelix().getUsers(
+                        Huinyabot.getInstance().getCredential().getAccessToken(),
+                        null,
+                        Collections.singletonList(targetAndEvent[0])
+                ).execute().getUsers();
 
-                    if (users.isEmpty()) {
-                        return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                                channel.getPreferences().getLanguage(),
-                                LineIds.NO_TWITCH_USER
-                        ));
-                    }
-
-                    eventName = users.get(0).getId();
-                } catch (Exception e) {
-                    e.printStackTrace();
-
-                    return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                            channel.getPreferences().getLanguage(),
-                            LineIds.SOMETHING_WENT_WRONG
-                    ));
+                if (users.isEmpty()) {
+                    throw CommandException.notFound(request, targetAndEvent[0]);
                 }
+
+                eventName = users.get(0).getId();
             }
         } else {
             eventType = EventType.CUSTOM;
@@ -175,11 +155,7 @@ public class NotifyCommand implements Command {
                 .findFirst();
 
         if (optionalEvent.isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.C_NOTIFY_NOTEXISTS,
-                    formattedEventName
-            ));
+            throw CommandException.notFound(request, formattedEventName);
         }
 
         Event event1 = optionalEvent.get();

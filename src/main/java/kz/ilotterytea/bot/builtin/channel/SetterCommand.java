@@ -1,9 +1,7 @@
 package kz.ilotterytea.bot.builtin.channel;
 
 import kz.ilotterytea.bot.Huinyabot;
-import kz.ilotterytea.bot.api.commands.Command;
-import kz.ilotterytea.bot.api.commands.Request;
-import kz.ilotterytea.bot.api.commands.Response;
+import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
 import kz.ilotterytea.bot.entities.permissions.Permission;
@@ -36,23 +34,17 @@ public class SetterCommand implements Command {
     }
 
     @Override
-    public Response run(Request request) {
+    public Response run(Request request) throws CommandException {
         ParsedMessage message = request.getMessage();
         Channel channel = request.getChannel();
         Session session = request.getSession();
 
         if (message.getSubcommandId().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_SUBCMD
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.SUBCOMMAND);
         }
 
         if (message.getMessage().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.MESSAGE);
         }
 
         switch (message.getSubcommandId().get()) {
@@ -89,10 +81,7 @@ public class SetterCommand implements Command {
                         LineIds.C_SET_SUCCESS_LOCALE_SET
                 ));
             default:
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.UNKNOWN_SUBCOMMAND
-                ));
+                throw CommandException.somethingWentWrong(request);
         }
     }
 }

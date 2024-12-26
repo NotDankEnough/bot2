@@ -83,5 +83,5 @@ public interface Command {
      * @author ilotterytea
      * @since 1.0
      */
-    Response run(Request request);
+    Response run(Request request) throws Exception;
 }

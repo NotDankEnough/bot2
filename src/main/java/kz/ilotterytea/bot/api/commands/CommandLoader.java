@@ -56,7 +56,7 @@ public class CommandLoader extends ClassLoader {
      * @author ilotterytea
      * @since 1.0
      */
-    public Optional<Response> call(Request request) {
+    public Optional<Response> call(Request request) throws Exception {
         Optional<Response> response = Optional.empty();
 
         if (COMMANDS.containsKey(request.getMessage().getCommandId())) {
@@ -91,11 +91,7 @@ public class CommandLoader extends ClassLoader {
             request.getSession().merge(request.getChannel());
             request.getSession().merge(request.getUser());
 
-            try {
-                response = Optional.of(cmd.run(request));
-            } catch (Exception e) {
-                LOGGER.error(String.format("Error occurred while running the %s command", request.getMessage().getCommandId()), e);
-            }
+            response = Optional.of(cmd.run(request));
         }
 
         return response;

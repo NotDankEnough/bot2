@@ -1,9 +1,7 @@
 package kz.ilotterytea.bot.builtin.channel;
 
 import kz.ilotterytea.bot.Huinyabot;
-import kz.ilotterytea.bot.api.commands.Command;
-import kz.ilotterytea.bot.api.commands.Request;
-import kz.ilotterytea.bot.api.commands.Response;
+import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.Timer;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
@@ -44,10 +42,7 @@ public class TimerCommand implements Command {
         Session session = request.getSession();
 
         if (message.getSubcommandId().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_SUBCMD
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.SUBCOMMAND);
         }
 
         List<Timer> timers = session.createQuery("from Timer where channel = :channel", Timer.class)
@@ -64,10 +59,7 @@ public class TimerCommand implements Command {
         }
 
         if (message.getMessage().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.VALUE);
         }
 
         ArrayList<String> s = new ArrayList<>(List.of(message.getMessage().get().split(" ")));
@@ -77,18 +69,11 @@ public class TimerCommand implements Command {
 
         if (message.getSubcommandId().get().equals("new")) {
             if (timers.stream().anyMatch(t -> t.getName().equals(timerId))) {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.C_TIMER_ALREADYEXISTS,
-                        timerId
-                ));
+                throw CommandException.namesakeCreation(request, timerId);
             }
 
             if (s.isEmpty() || s.size() < 2) {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.NO_MESSAGE
-                ));
+                throw CommandException.notEnoughArguments(request, CommandArgument.MESSAGE);
             }
 
             int intervalMs;
@@ -97,11 +82,7 @@ public class TimerCommand implements Command {
                 intervalMs = Integer.parseInt(s.get(0));
                 s.remove(0);
             } catch (NumberFormatException e) {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.C_TIMER_NOTANINTERVAL,
-                        s.get(0)
-                ));
+                throw CommandException.incorrectArgument(request, CommandArgument.INTERVAL, s.get(0));
             }
 
             Timer timer = new Timer(channel, timerId, String.join(" ", s), intervalMs);
@@ -118,11 +99,7 @@ public class TimerCommand implements Command {
         }
 
         if (timers.stream().noneMatch(t -> t.getName().equals(timerId))) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.C_TIMER_NOTEXISTS,
-                    timerId
-            ));
+            throw CommandException.notFound(request, timerId);
         }
 
         Timer timer = timers.stream().filter(t -> t.getName().equals(timerId)).findFirst().get();
@@ -149,10 +126,7 @@ public class TimerCommand implements Command {
         }
 
         if (s.isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.MESSAGE);
         }
 
         String msg = String.join(" ", s);
@@ -174,11 +148,7 @@ public class TimerCommand implements Command {
                 try {
                     interval = Integer.parseInt(msg);
                 } catch (NumberFormatException e) {
-                    return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                            channel.getPreferences().getLanguage(),
-                            LineIds.C_TIMER_NOTANINTERVAL,
-                            msg
-                    ));
+                    throw CommandException.incorrectArgument(request, CommandArgument.INTERVAL, msg);
                 }
 
                 timer.setIntervalMilliseconds(interval);

@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.CommandException;
 import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
@@ -17,7 +18,6 @@ import kz.ilotterytea.bot.utils.ParsedMessage;
 import kz.ilotterytea.bot.utils.StringUtils;
 import okhttp3.OkHttpClient;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -53,7 +53,7 @@ public class HolidayCommand implements Command {
     }
 
     @Override
-    public Response run(Request request) {
+    public Response run(Request request) throws Exception {
         ParsedMessage message = request.getMessage();
         Channel channel = request.getChannel();
 
@@ -71,23 +71,14 @@ public class HolidayCommand implements Command {
 
             ArrayList<HolidayModel> holidays;
 
-            try {
-                okhttp3.Response response = new OkHttpClient().newCall(httpRequest).execute();
+            okhttp3.Response response = new OkHttpClient().newCall(httpRequest).execute();
 
-                if (response.code() == 200) {
-                    assert response.body() != null;
-                    holidays = new Gson().fromJson(response.body().string(), new TypeToken<ArrayList<HolidayModel>>() {
-                    }.getType());
-                } else {
-                    return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                            channel.getPreferences().getLanguage(),
-                            LineIds.HTTP_ERROR,
-                            String.valueOf(response.code()),
-                            "Holiday"
-                    ));
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if (response.code() == 200) {
+                assert response.body() != null;
+                holidays = new Gson().fromJson(response.body().string(), new TypeToken<ArrayList<HolidayModel>>() {
+                }.getType());
+            } else {
+                throw CommandException.externalAPIError(request, response.code(), "Holiday");
             }
 
             if (holidays.isEmpty()) {
@@ -173,23 +164,14 @@ public class HolidayCommand implements Command {
 
         ArrayList<String> holidays;
 
-        try {
-            okhttp3.Response response = new OkHttpClient().newCall(httpRequest).execute();
+        okhttp3.Response response = new OkHttpClient().newCall(httpRequest).execute();
 
-            if (response.code() == 200) {
-                assert response.body() != null;
-                holidays = new Gson().fromJson(response.body().string(), new TypeToken<ArrayList<String>>() {
-                }.getType());
-            } else {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.HTTP_ERROR,
-                        String.valueOf(response.code()),
-                        "Holiday"
-                ));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (response.code() == 200) {
+            assert response.body() != null;
+            holidays = new Gson().fromJson(response.body().string(), new TypeToken<ArrayList<String>>() {
+            }.getType());
+        } else {
+            throw CommandException.externalAPIError(request, response.code(), "Holiday");
         }
 
         if (holidays.size() == 0) {
@@ -214,48 +196,34 @@ public class HolidayCommand implements Command {
 
         ArrayList<Emote> emotes;
 
-        try (okhttp3.Response response = client.newCall(statsRequest).execute()) {
-            if (response.code() != 200) {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.HTTP_ERROR,
-                        String.valueOf(response.code()),
-                        "Stats API"
-                ));
-            }
+        response = client.newCall(statsRequest).execute();
+        if (response.code() != 200) {
+            throw CommandException.externalAPIError(request, response.code(), "Stats API");
+        }
 
-            if (response.body() == null) {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.SOMETHING_WENT_WRONG
-                ));
-            }
+        if (response.body() == null) {
+            throw CommandException.somethingWentWrong(request);
+        }
 
-            String body = response.body().string();
+        String body = response.body().string();
 
-            ServerPayload<ArrayList<Emote>> payload = new Gson().fromJson(body, new TypeToken<ServerPayload<ArrayList<Emote>>>() {
-            }.getType());
+        ServerPayload<ArrayList<Emote>> payload = new Gson().fromJson(body, new TypeToken<ServerPayload<ArrayList<Emote>>>() {
+        }.getType());
 
-            if (payload.getData() != null) {
-                emotes = payload.getData();
-            } else {
-                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
-                        channel.getPreferences().getLanguage(),
-                        LineIds.C_ETOP_NOCHANNELEMOTES,
-                        Huinyabot.getInstance().getLocale().literalText(
-                                channel.getPreferences().getLanguage(),
-                                LineIds.STV
-                        ),
-                        Huinyabot.getInstance().getLocale().literalText(
-                                channel.getPreferences().getLanguage(),
-                                LineIds.STV
-                        )
-                ));
-            }
-        } catch (IOException e) {
+        if (payload.getData() != null) {
+            emotes = payload.getData();
+        } else {
             return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
-                    LineIds.SOMETHING_WENT_WRONG
+                    LineIds.C_ETOP_NOCHANNELEMOTES,
+                    Huinyabot.getInstance().getLocale().literalText(
+                            channel.getPreferences().getLanguage(),
+                            LineIds.STV
+                    ),
+                    Huinyabot.getInstance().getLocale().literalText(
+                            channel.getPreferences().getLanguage(),
+                            LineIds.STV
+                    )
             ));
         }
 

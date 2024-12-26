@@ -1,9 +1,7 @@
 package kz.ilotterytea.bot.builtin.emotes;
 
 import kz.ilotterytea.bot.Huinyabot;
-import kz.ilotterytea.bot.api.commands.Command;
-import kz.ilotterytea.bot.api.commands.Request;
-import kz.ilotterytea.bot.api.commands.Response;
+import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.thirdpartythings.seventv.api.SevenTVAPIClient;
@@ -32,15 +30,12 @@ public class EmoteSetSimilarityCommand implements Command {
     }
 
     @Override
-    public Response run(Request request) {
+    public Response run(Request request) throws Exception {
         ParsedMessage message = request.getMessage();
         Channel channel = request.getChannel();
 
         if (message.getMessage().isEmpty()) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_MESSAGE
-            ));
+            throw CommandException.notEnoughArguments(request, CommandArgument.VALUE);
         }
 
         // Setting the origin and target channels:
@@ -57,10 +52,7 @@ public class EmoteSetSimilarityCommand implements Command {
         }
 
         if (originChannel.equals(targetChannel)) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.SAME_TWITCH_USER
-            ));
+            throw CommandException.incorrectArgument(request, CommandArgument.VALUE, targetChannel);
         }
 
         // Getting Twitch users:
@@ -75,10 +67,7 @@ public class EmoteSetSimilarityCommand implements Command {
                 .getUsers();
 
         if (userList.size() <= 1) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_TWITCH_USER
-            ));
+            throw CommandException.notFound(request, originChannel + " | " + targetChannel);
         }
 
         com.github.twitch4j.helix.domain.User originUser = userList.stream().filter(p -> p.getLogin().equals(originChannel)).findFirst().get();
@@ -89,10 +78,7 @@ public class EmoteSetSimilarityCommand implements Command {
         kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.User targetSTVUser = SevenTVAPIClient.getUser(Integer.parseInt(targetUser.getId()));
 
         if (originSTVUser == null || targetSTVUser == null) {
-            return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
-                    channel.getPreferences().getLanguage(),
-                    LineIds.NO_EMOTE_SET
-            ));
+            throw CommandException.notFound(request, originChannel + " | " + targetChannel);
         }
 
         EmoteSet originEmoteSet = originSTVUser.getEmoteSet();
