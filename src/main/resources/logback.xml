@@ -1,0 +1,18 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- Disable all Hibernate related logging -->
+    <logger name="org.hibernate" level="OFF"/>
+    <logger name="org.hibernate.SQL" level="OFF"/>
+    <logger name="org.hibernate.type" level="OFF"/>
+    <logger name="org.hibernate.transaction" level="OFF"/>
+</configuration>
