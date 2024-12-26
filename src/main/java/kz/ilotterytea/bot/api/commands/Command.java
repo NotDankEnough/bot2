@@ -1,12 +1,6 @@
 package kz.ilotterytea.bot.api.commands;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
-import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.entities.permissions.UserPermission;
-import kz.ilotterytea.bot.entities.users.User;
-import kz.ilotterytea.bot.utils.ParsedMessage;
-import org.hibernate.Session;
 
 import java.util.List;
 
@@ -70,12 +64,5 @@ public interface Command {
      * @author ilotterytea
      * @since 1.0
      */
-    Response run(
-            Session session,
-            IRCMessageEvent event,
-            ParsedMessage message,
-            Channel channel,
-            User user,
-            UserPermission permission
-    );
+    Response run(Request request);
 }

@@ -1,14 +1,12 @@
 package kz.ilotterytea.bot.builtin.channel;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.CustomCommand;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.entities.permissions.UserPermission;
-import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 import org.hibernate.Session;
@@ -54,7 +52,11 @@ public class CustomCommandControl implements Command {
     }
 
     @Override
-    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Request request) {
+        ParsedMessage message = request.getMessage();
+        Channel channel = request.getChannel();
+        Session session = request.getSession();
+
         if (message.getMessage().isEmpty()) {
             return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
@@ -100,7 +102,7 @@ public class CustomCommandControl implements Command {
         s.remove(0);
 
         // If the command was run by a broadcaster:
-        if (permission.getPermission().getValue() >= Permission.BROADCASTER.getValue()) {
+        if (request.getUserPermission().getPermission().getValue() >= Permission.BROADCASTER.getValue()) {
             Optional<CustomCommand> optionalCustomCommands = channel.getCommands().stream().filter(c -> c.getName().equals(name)).findFirst();
             String response = String.join(" ", s);
 

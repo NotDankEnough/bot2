@@ -1,18 +1,15 @@
 package kz.ilotterytea.bot.builtin.spam;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import com.github.twitch4j.helix.domain.Chatter;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.entities.permissions.UserPermission;
-import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
-import org.hibernate.Session;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +53,10 @@ public class MasspingCommand implements Command {
     }
 
     @Override
-    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Request request) {
+        ParsedMessage message = request.getMessage();
+        Channel channel = request.getChannel();
+
         List<Chatter> chatters;
 
         try {

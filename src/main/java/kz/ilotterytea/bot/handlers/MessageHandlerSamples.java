@@ -2,6 +2,7 @@ package kz.ilotterytea.bot.handlers;
 
 import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
+import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.CustomCommand;
 import kz.ilotterytea.bot.entities.channels.Channel;
@@ -136,9 +137,7 @@ public class MessageHandlerSamples {
         // Processing the command:
         if (parsedMessage.isPresent()) {
             session.getTransaction().begin();
-
-            Optional<Response> responseOptional = bot.getLoader().call(
-                    parsedMessage.get().getCommandId(),
+            Request request = new Request(
                     session,
                     e,
                     parsedMessage.get(),
@@ -146,6 +145,8 @@ public class MessageHandlerSamples {
                     user,
                     userPermission
             );
+
+            Optional<Response> responseOptional = bot.getLoader().call(request);
 
             if (responseOptional.isPresent()) {
                 Response response = responseOptional.get();

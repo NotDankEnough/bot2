@@ -1,18 +1,16 @@
 package kz.ilotterytea.bot.builtin.events;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import com.github.twitch4j.helix.domain.Chatter;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.events.EventFlag;
 import kz.ilotterytea.bot.entities.events.EventType;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.entities.permissions.UserPermission;
-import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 import kz.ilotterytea.bot.utils.StringUtils;
@@ -60,7 +58,11 @@ public class EventCommand implements Command {
     }
 
     @Override
-    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Request request) {
+        ParsedMessage message = request.getMessage();
+        Channel channel = request.getChannel();
+        Session session = request.getSession();
+
         if (message.getSubcommandId().isEmpty()) {
             return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),

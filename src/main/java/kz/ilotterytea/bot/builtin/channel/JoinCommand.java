@@ -1,16 +1,14 @@
 package kz.ilotterytea.bot.builtin.channel;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
-import kz.ilotterytea.bot.utils.ParsedMessage;
 import org.hibernate.Session;
 
 import java.util.Collections;
@@ -54,7 +52,11 @@ public class JoinCommand implements Command {
     }
 
     @Override
-    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Request request) {
+        Channel channel = request.getChannel();
+        User user = request.getUser();
+        Session session = request.getSession();
+
         // Getting the sender's local channel info if it exists:
         List<Channel> userChannels = session.createQuery("from Channel where aliasId = :aliasId", Channel.class)
                 .setParameter("aliasId", user.getAliasId())

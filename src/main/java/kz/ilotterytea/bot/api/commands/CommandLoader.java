@@ -1,12 +1,6 @@
 package kz.ilotterytea.bot.api.commands;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.bot.entities.Action;
-import kz.ilotterytea.bot.entities.channels.Channel;
-import kz.ilotterytea.bot.entities.permissions.UserPermission;
-import kz.ilotterytea.bot.entities.users.User;
-import kz.ilotterytea.bot.utils.ParsedMessage;
-import org.hibernate.Session;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,15 +56,15 @@ public class CommandLoader extends ClassLoader {
      * @author ilotterytea
      * @since 1.0
      */
-    public Optional<Response> call(String nameId, Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Optional<Response> call(Request request) {
         Optional<Response> response = Optional.empty();
 
-        if (COMMANDS.containsKey(nameId)) {
-            Command cmd = COMMANDS.get(nameId);
+        if (COMMANDS.containsKey(request.getMessage().getCommandId())) {
+            Command cmd = COMMANDS.get(request.getMessage().getCommandId());
 
-            List<Action> actions = session.createQuery("from Action WHERE channel = :channel AND user = :user AND commandId = :commandId ORDER BY creationTimestamp DESC", Action.class)
-                    .setParameter("channel", channel)
-                    .setParameter("user", user)
+            List<Action> actions = request.getSession().createQuery("from Action WHERE channel = :channel AND user = :user AND commandId = :commandId ORDER BY creationTimestamp DESC", Action.class)
+                    .setParameter("channel", request.getChannel())
+                    .setParameter("user", request.getUser())
                     .setParameter("commandId", cmd.getNameId())
                     .getResultList();
 
@@ -84,23 +78,23 @@ public class CommandLoader extends ClassLoader {
                 }
             }
 
-            if (permission.getPermission().getValue() < cmd.getPermissions().getValue() || isExecutedRecently) {
-                session.close();
+            if (request.getUserPermission().getPermission().getValue() < cmd.getPermissions().getValue() || isExecutedRecently) {
+                request.getSession().close();
                 return Optional.empty();
             }
 
-            Action action = new Action(user, channel, cmd.getNameId(), event.getMessage().get());
-            channel.addAction(action);
-            user.addAction(action);
+            Action action = new Action(request.getUser(), request.getChannel(), cmd.getNameId(), request.getEvent().getMessage().get());
+            request.getChannel().addAction(action);
+            request.getUser().addAction(action);
 
-            session.persist(action);
-            session.merge(channel);
-            session.merge(user);
+            request.getSession().persist(action);
+            request.getSession().merge(request.getChannel());
+            request.getSession().merge(request.getUser());
 
             try {
-                response = Optional.of(cmd.run(session, event, message, channel, user, permission));
+                response = Optional.of(cmd.run(request));
             } catch (Exception e) {
-                LOGGER.error(String.format("Error occurred while running the %s command", nameId), e);
+                LOGGER.error(String.format("Error occurred while running the %s command", request.getMessage().getCommandId()), e);
             }
         }
 

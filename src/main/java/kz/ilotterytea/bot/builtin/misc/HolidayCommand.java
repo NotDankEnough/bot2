@@ -1,17 +1,15 @@
 package kz.ilotterytea.bot.builtin.misc;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import com.github.twitch4j.tmi.domain.Chatters;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.entities.permissions.UserPermission;
-import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.models.HolidayModel;
 import kz.ilotterytea.bot.models.serverresponse.Emote;
@@ -19,8 +17,6 @@ import kz.ilotterytea.bot.models.serverresponse.ServerPayload;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 import kz.ilotterytea.bot.utils.StringUtils;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import org.hibernate.Session;
 
 import java.io.IOException;
 import java.util.*;
@@ -63,7 +59,10 @@ public class HolidayCommand implements Command {
     }
 
     @Override
-    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Request request) {
+        ParsedMessage message = request.getMessage();
+        Channel channel = request.getChannel();
+
         if (message.getSubcommandId().isPresent() && message.getSubcommandId().get().equals("search")) {
             if (message.getMessage().isEmpty()) {
                 return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
@@ -72,14 +71,14 @@ public class HolidayCommand implements Command {
                 ));
             }
 
-            Request request = new Request.Builder()
+            okhttp3.Request httpRequest = new okhttp3.Request.Builder()
                     .url(String.format(SharedConstants.HOLIDAY_SEARCH_URL, message.getMessage().get()))
                     .build();
 
             ArrayList<HolidayModel> holidays;
 
             try {
-                okhttp3.Response response = new OkHttpClient().newCall(request).execute();
+                okhttp3.Response response = new OkHttpClient().newCall(httpRequest).execute();
 
                 if (response.code() == 200) {
                     assert response.body() != null;
@@ -174,14 +173,14 @@ public class HolidayCommand implements Command {
             }
         }
 
-        Request request = new Request.Builder()
+        okhttp3.Request httpRequest = new okhttp3.Request.Builder()
                 .url(String.format(SharedConstants.HOLIDAY_URL, month, day))
                 .build();
 
         ArrayList<String> holidays;
 
         try {
-            okhttp3.Response response = new OkHttpClient().newCall(request).execute();
+            okhttp3.Response response = new OkHttpClient().newCall(httpRequest).execute();
 
             if (response.code() == 200) {
                 assert response.body() != null;
@@ -214,7 +213,7 @@ public class HolidayCommand implements Command {
         }
 
         OkHttpClient client = new OkHttpClient.Builder().build();
-        Request statsRequest = new Request.Builder()
+        okhttp3.Request statsRequest = new okhttp3.Request.Builder()
                 .get()
                 .url(SharedConstants.STATS_URL + "/api/v1/channel/" + channel.getAliasId().toString() + "/emotes")
                 .build();

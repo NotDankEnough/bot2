@@ -1,21 +1,17 @@
 package kz.ilotterytea.bot.builtin.mc;
 
-import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import com.google.gson.Gson;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.api.commands.Command;
+import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.permissions.Permission;
-import kz.ilotterytea.bot.entities.permissions.UserPermission;
-import kz.ilotterytea.bot.entities.users.User;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.models.serverresponse.mc.ServerInfo;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import org.hibernate.Session;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -59,7 +55,10 @@ public class MCServerInfoCommand implements Command {
     }
 
     @Override
-    public Response run(Session session, IRCMessageEvent event, ParsedMessage message, Channel channel, User user, UserPermission permission) {
+    public Response run(Request request) {
+        ParsedMessage message = request.getMessage();
+        Channel channel = request.getChannel();
+
         if (message.getMessage().isEmpty()) {
             return Response.ofSingle(Huinyabot.getInstance().getLocale().literalText(
                     channel.getPreferences().getLanguage(),
@@ -68,12 +67,12 @@ public class MCServerInfoCommand implements Command {
         }
 
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
+        okhttp3.Request httpRequest = new okhttp3.Request.Builder()
                 .get()
                 .url(SharedConstants.MCSRVSTATUS_ENDPOINT + "/" + message.getMessage().get())
                 .build();
 
-        try (okhttp3.Response response = client.newCall(request).execute()) {
+        try (okhttp3.Response response = client.newCall(httpRequest).execute()) {
             if (response.body() == null || response.code() != 200) {
                 return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                         channel.getPreferences().getLanguage(),
