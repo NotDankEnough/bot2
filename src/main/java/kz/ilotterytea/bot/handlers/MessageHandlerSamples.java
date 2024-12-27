@@ -7,6 +7,7 @@ import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.entities.CustomCommand;
 import kz.ilotterytea.bot.entities.channels.Channel;
+import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
 import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
@@ -118,9 +119,14 @@ public class MessageHandlerSamples {
         }
 
         session.persist(userPermission);
+        session.getTransaction().commit();
+
+        if (channel.getPreferences().getFeatures().contains(ChannelFeature.SILENT_MODE)) {
+            session.close();
+            return;
+        }
 
         String msg = e.getMessage();
-        session.getTransaction().commit();
 
         final Optional<ParsedMessage> parsedMessage = ParsedMessage.parse(msg, channel.getPreferences().getPrefix());
 

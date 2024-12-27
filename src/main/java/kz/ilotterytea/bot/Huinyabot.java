@@ -9,6 +9,7 @@ import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import com.github.twitch4j.helix.domain.User;
 import kz.ilotterytea.bot.api.commands.CommandLoader;
 import kz.ilotterytea.bot.entities.channels.Channel;
+import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
 import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.handlers.MessageHandlerSamples;
@@ -179,6 +180,10 @@ public class Huinyabot extends Bot {
                 session1.getTransaction().begin();
 
                 for (kz.ilotterytea.bot.entities.Timer timer : timers) {
+                    if (timer.getChannel().getPreferences().getFeatures().contains(ChannelFeature.SILENT_MODE)) {
+                        continue;
+                    }
+                    
                     if (CURRENT_DATE.getTime() - timer.getLastTimeExecuted().getTime() > timer.getIntervalMilliseconds()) {
                         client.getChat().sendMessage(
                                 timer.getChannel().getAliasName(),

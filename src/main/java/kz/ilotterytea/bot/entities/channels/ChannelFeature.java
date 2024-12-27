@@ -10,7 +10,8 @@ import java.util.Optional;
  * @version 1.4
  */
 public enum ChannelFeature {
-    NOTIFY_7TV("notify_7tv_events");
+    NOTIFY_7TV("notify_7tv_events"),
+    SILENT_MODE("silent_mode");
 
     private String id;
 

@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.entities.channels.Channel;
+import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.thirdpartythings.seventv.api.SevenTVAPIClient;
 import kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.SevenTVUser;
@@ -62,7 +63,8 @@ public class SevenTVEventAPIClient extends WebSocketClient {
         if (payload.getOperation() == 0) {
             final Huinyabot BOT = Huinyabot.getInstance();
 
-            Payload<PayloadData<EmoteSetBody>> emoteSetPayload = gson.fromJson(message, new TypeToken<Payload<PayloadData<EmoteSetBody>>>(){}.getType());
+            Payload<PayloadData<EmoteSetBody>> emoteSetPayload = gson.fromJson(message, new TypeToken<Payload<PayloadData<EmoteSetBody>>>() {
+            }.getType());
             EmoteSetBody body = emoteSetPayload.getData().getBody();
 
             // Getting information about the emote set:
@@ -102,6 +104,9 @@ public class SevenTVEventAPIClient extends WebSocketClient {
             }
 
             Channel channel = channels.get(0);
+            if (channel.getPreferences().getFeatures().contains(ChannelFeature.SILENT_MODE)) {
+                return;
+            }
 
             List<String> messages = new ArrayList<>();
 
@@ -184,14 +189,16 @@ public class SevenTVEventAPIClient extends WebSocketClient {
 
         // Handling 'acknowledge' events.
         else if (payload.getOperation() == 5) {
-            Payload<AcknowledgeData> ackPayload = gson.fromJson(message, new TypeToken<Payload<AcknowledgeData>>(){}.getType());
+            Payload<AcknowledgeData> ackPayload = gson.fromJson(message, new TypeToken<Payload<AcknowledgeData>>() {
+            }.getType());
 
             String command = ackPayload.getData().getCommand();
 
             if (Objects.equals(command, "SUBSCRIBE")) {
                 LOGGER.debug("Successfully subscribed!");
             } else if (Objects.equals(command, "RESUME") && tryingToResume) {
-                Payload<AcknowledgeData<ResumeData>> acknowledgeDataPayload = gson.fromJson(message, new TypeToken<Payload<AcknowledgeData<ResumeData>>>(){}.getType());
+                Payload<AcknowledgeData<ResumeData>> acknowledgeDataPayload = gson.fromJson(message, new TypeToken<Payload<AcknowledgeData<ResumeData>>>() {
+                }.getType());
                 if (acknowledgeDataPayload.getData().getData().getSuccess()) {
                     LOGGER.debug("Successfully resumed the session!");
                     tryingToResume = false;
@@ -295,7 +302,8 @@ public class SevenTVEventAPIClient extends WebSocketClient {
         Payload payload = gson.fromJson(message, Payload.class);
 
         if (payload.getOperation() == 1) {
-            Payload<HelloData> helloDataPayload = gson.fromJson(message, new TypeToken<Payload<HelloData>>(){}.getType());
+            Payload<HelloData> helloDataPayload = gson.fromJson(message, new TypeToken<Payload<HelloData>>() {
+            }.getType());
             sessionId = helloDataPayload.getData().getSessionId();
         }
 

@@ -6,6 +6,7 @@ import com.github.twitch4j.helix.domain.Chatter;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.entities.channels.Channel;
+import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.events.EventFlag;
 import kz.ilotterytea.bot.entities.events.EventType;
@@ -81,6 +82,10 @@ public class StreamEventHandlers {
      * @param event   Event.
      */
     private static void handleStreamEvent(Channel channel, Event event) {
+        if (channel.getPreferences().getFeatures().contains(ChannelFeature.SILENT_MODE)) {
+            return;
+        }
+
         final String ANNOUNCEMENT_LINE = BOT.getLocale().formattedText(
                 channel.getPreferences().getLanguage(),
                 LineIds.EVENTS_MESSAGE,
