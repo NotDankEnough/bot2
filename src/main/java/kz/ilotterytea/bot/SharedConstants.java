@@ -28,6 +28,8 @@ public class SharedConstants {
     public static final String TWITCH_DEFAULT_PREFIX;
     public static final String TWITCH_DEFAULT_LOCALE_ID;
 
+    public static final Properties PROPERTIES;
+
     static {
         Properties properties = new Properties();
 
@@ -36,6 +38,8 @@ public class SharedConstants {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        PROPERTIES = properties;
 
         TWITCH_TOKEN = properties.getProperty("twitch.token", null);
         TWITCH_DEFAULT_PREFIX = properties.getProperty("twitch.default_prefix", "!");
