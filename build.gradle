@@ -2,6 +2,8 @@ plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id("io.micronaut.application") version "4.4.4"
+    id("io.micronaut.aot") version "4.4.4"
 }
 
 group 'kz.ilotterytea'
@@ -22,6 +24,15 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp'
     implementation 'org.hibernate.orm:hibernate-core:6.2.0.Final'
     implementation 'org.postgresql:postgresql:42.7.2'
+
+    // Web related dependencies
+    annotationProcessor("io.micronaut:micronaut-http-validation")
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("io.micronaut.views:micronaut-views-handlebars")
+    compileOnly("io.micronaut:micronaut-http-client")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    testImplementation("io.micronaut:micronaut-http-client")
 }
 
 test {
@@ -36,4 +47,23 @@ java {
 
 application {
     mainClass = "kz.ilotterytea.bot.Main"
+}
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("kz.ilotterytea.bot.*")
+    }
+    aot {
+        optimizeServiceLoading = false
+        convertYamlToJava = false
+        precomputeOperations = true
+        cacheEnvironment = true
+        optimizeClassLoading = true
+        deduceEnvironment = true
+        optimizeNetty = true
+        replaceLogbackXml = true
+    }
 }

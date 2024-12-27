@@ -1,5 +1,7 @@
 package kz.ilotterytea.bot;
 
+import io.micronaut.runtime.Micronaut;
+
 /**
  * @author ilotterytea
  * @since 1.0
@@ -10,5 +12,10 @@ public class Main {
 
         Runtime.getRuntime().addShutdownHook(new Thread(bot::dispose));
         bot.init();
+
+        Micronaut.build(args)
+                .eagerInitSingletons(true)
+                .mainClass(Main.class)
+                .start();
     }
 }
