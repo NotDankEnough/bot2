@@ -118,7 +118,9 @@ public enum LineIds {
     C_EVENT_ONUPDATE("cmd.event.response.on.update"),
     C_EVENT_OFF("cmd.event.response.off"),
     C_EVENT_FLAG("cmd.event.response.flag"),
-    C_EVENT_UNFLAG("cmd.event.response.flag");
+    C_EVENT_UNFLAG("cmd.event.response.flag"),
+
+    C_CHATTERS("cmd.chatters");
 
     private final String id;
 

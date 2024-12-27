@@ -126,5 +126,6 @@
   "cmd.event.response.flag": "The flag \"%s\" has been set for the event \"%s\"!",
   "cmd.event.response.unflag": "Removed the \"%s\" flag from the \"%s\" event!",
   "cmd.event.response.flag_not_exists": "The flag \"%s\" does not exist. Available flags: %s",
-  "cmd.event.response.not_exists": "There is no \"%s\" event!"
+  "cmd.event.response.not_exists": "There is no \"%s\" event!",
+  "cmd.chatters": "%s: Chatter list: %s"
 }
