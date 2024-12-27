@@ -10,12 +10,16 @@ public class Main {
     public static void main(String[] args) {
         Huinyabot bot = new Huinyabot();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(bot::dispose));
-        bot.init();
+        if (Boolean.parseBoolean(SharedConstants.PROPERTIES.getProperty("bot.enabled", "true"))) {
+            Runtime.getRuntime().addShutdownHook(new Thread(bot::dispose));
+            bot.init();
+        }
 
-        Micronaut.build(args)
-                .eagerInitSingletons(true)
-                .mainClass(Main.class)
-                .start();
+        if (Boolean.parseBoolean(SharedConstants.PROPERTIES.getProperty("web.enabled", "true"))) {
+            Micronaut.build(args)
+                    .eagerInitSingletons(true)
+                    .mainClass(Main.class)
+                    .start();
+        }
     }
 }
