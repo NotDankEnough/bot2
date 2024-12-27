@@ -1,11 +1,14 @@
 package kz.ilotterytea.bot;
 
+import kz.ilotterytea.bot.utils.HibernateUtil;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
 /**
  * App constants.
+ *
  * @author ilotterytea
  * @since 1.0
  */
@@ -39,6 +42,8 @@ public class SharedConstants {
         TWITCH_ACCESS_TOKEN = properties.getProperty("twitch.access_token", null);
         TWITCH_DEFAULT_PREFIX = properties.getProperty("twitch.default_prefix", "!");
         TWITCH_DEFAULT_LOCALE_ID = properties.getProperty("twitch.default_locale_id", "en_us");
+
+        HibernateUtil.initSessionFactory(properties);
     }
 
     public static final String HOLIDAY_URL = "https://hol.ilotterytea.kz/api/v1/%s/%s";
