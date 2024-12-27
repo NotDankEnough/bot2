@@ -102,6 +102,8 @@
   "cmd.set.response.success.locale.set.user": "I now speak English to you KKona",
   "cmd.set.response.success.7tv.enabled": "(7TV) This chat will receive notifications about 7TV events!",
   "cmd.set.response.success.7tv.disabled": "(7TV) This chat will no longer receive notifications about 7TV events!",
+  "cmd.set.response.success.feature.disabled": "The feature \"%s\" has been disabled for this chat!",
+  "cmd.set.response.success.feature.enabled": "The feature \"%s\" has been enabled for this chat!",
   "cmd.esimilarity.response.success": "(%s) %s's emote set is %s% similar to %s's emote set (%s of %s)",
   "cmd.esimilarity.response.no_similarity": "(%s) %s's emote set is not similar to %s's emote set",
   "cmd.mcserver.response.success": "✅ %s | \"%s\" | %s players out of %s | %s",

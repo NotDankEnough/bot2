@@ -3,6 +3,7 @@ package kz.ilotterytea.bot.builtin.channel;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.channels.Channel;
+import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
 import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.i18n.LineIds;
@@ -10,6 +11,7 @@ import kz.ilotterytea.bot.utils.ParsedMessage;
 import org.hibernate.Session;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Ping command.
@@ -25,12 +27,12 @@ public class SetterCommand implements Command {
 
     @Override
     public Permission getPermissions() {
-        return Permission.BROADCASTER;
+        return Permission.MOD;
     }
 
     @Override
     public List<String> getSubcommands() {
-        return List.of("prefix", "locale");
+        return List.of("prefix", "locale", "feature");
     }
 
     @Override
@@ -62,7 +64,7 @@ public class SetterCommand implements Command {
                 ));
             }
             // "Locale", "language" clause.
-            case "locale":
+            case "locale": {
                 if (!Huinyabot.getInstance().getLocale().getLocaleIds().contains(message.getMessage().get().toLowerCase())) {
                     return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
                             channel.getPreferences().getLanguage(),
@@ -80,6 +82,35 @@ public class SetterCommand implements Command {
                         preferences.getLanguage(),
                         LineIds.C_SET_SUCCESS_LOCALE_SET
                 ));
+            }
+            case "feature": {
+                Optional<ChannelFeature> featureOptional = ChannelFeature.getById(request.getMessage().getMessage().get());
+
+                if (featureOptional.isEmpty()) {
+                    throw CommandException.notFound(request, request.getMessage().getMessage().get());
+                }
+
+                ChannelFeature feature = featureOptional.get();
+
+                ChannelPreferences preferences = channel.getPreferences();
+
+                boolean isRemoved = false;
+
+                if (preferences.getFeatures().contains(feature)) {
+                    preferences.getFeatures().remove(feature);
+                    isRemoved = true;
+                } else {
+                    preferences.getFeatures().add(feature);
+                }
+
+                session.merge(preferences);
+
+                return Response.ofSingle(Huinyabot.getInstance().getLocale().formattedText(
+                        preferences.getLanguage(),
+                        isRemoved ? LineIds.C_SET_SUCCESS_FEATURE_REMOVED : LineIds.C_SET_SUCCESS_FEATURE_ADDED,
+                        request.getMessage().getMessage().get()
+                ));
+            }
             default:
                 throw CommandException.somethingWentWrong(request);
         }

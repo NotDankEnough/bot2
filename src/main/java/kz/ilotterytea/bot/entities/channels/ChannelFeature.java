@@ -1,7 +1,11 @@
 package kz.ilotterytea.bot.entities.channels;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
  * Channel features.
+ *
  * @author ilotterytea
  * @version 1.4
  */
@@ -16,5 +20,9 @@ public enum ChannelFeature {
 
     public String getId() {
         return id;
+    }
+
+    public static Optional<ChannelFeature> getById(String id) {
+        return Arrays.stream(ChannelFeature.values()).filter((x) -> x.id.equals(id)).findFirst();
     }
 }

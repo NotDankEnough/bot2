@@ -97,6 +97,8 @@ public enum LineIds {
     C_SET_SUCCESS_LOCALE_SET_USER("cmd.set.response.success.locale.set.user"),
     C_SET_SUCCESS_NOTIFY7TV_ENABLED("cmd.set.response.success.7tv.enabled"),
     C_SET_SUCCESS_NOTIFY7TV_DISABLED("cmd.set.response.success.7tv.disabled"),
+    C_SET_SUCCESS_FEATURE_REMOVED("cmd.set.response.success.feature.disabled"),
+    C_SET_SUCCESS_FEATURE_ADDED("cmd.set.response.success.feature.enabled"),
 
     C_ESIMILARITY_SUCCESS("cmd.esimilarity.response.success"),
     C_ESIMILARITY_NOSIMILARITY("cmd.esimilarity.response.no_similarity"),
