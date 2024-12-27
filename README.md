@@ -8,7 +8,7 @@ This project is for me to learn more about Java and all its tricks.
 ## Prerequisites
 
 + PostgreSQL 15
-+ JDK 11
++ JDK 17
 
 ## Building from sources
 

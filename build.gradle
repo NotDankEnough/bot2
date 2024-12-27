@@ -30,6 +30,8 @@ test {
 
 java {
     withSourcesJar()
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
 }
 
 application {
