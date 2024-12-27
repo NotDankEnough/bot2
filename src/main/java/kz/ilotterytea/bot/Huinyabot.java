@@ -143,13 +143,13 @@ public class Huinyabot extends Bot {
         }
 
         // Obtaining to stream events:
-        List<Event> streamEvents = session.createQuery("from Event where eventType > 0 AND eventType <= 2", Event.class).getResultList();
+        List<Event> streamEvents = session.createQuery("from Event where eventType > CUSTOM AND eventType <= OFFLINE", Event.class).getResultList();
 
         if (!streamEvents.isEmpty()) {
             Set<Integer> eventIds = new HashSet<>();
 
             for (Event streamEvent : streamEvents) {
-                eventIds.add(streamEvent.getAliasId());
+                eventIds.add(streamEvent.getTargetAliasId());
             }
 
             // Getting Twitch info about the stream events:

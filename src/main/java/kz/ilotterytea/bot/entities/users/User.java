@@ -3,10 +3,8 @@ package kz.ilotterytea.bot.entities.users;
 import jakarta.persistence.*;
 import kz.ilotterytea.bot.entities.Action;
 import kz.ilotterytea.bot.entities.events.subscriptions.EventSubscription;
-import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -14,6 +12,7 @@ import java.util.Set;
 
 /**
  * User.
+ *
  * @author ilotterytea
  * @version 1.4
  */
@@ -33,16 +32,11 @@ public class User {
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "joined_at", updatable = false, nullable = false)
     private Date creationTimestamp;
 
-    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at", nullable = false)
-    private Date updateTimestamp;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "opt_outed_at")
+    @Column(name = "opted_out_at")
     private Date optOutTimestamp;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
@@ -50,10 +44,6 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<EventSubscription> subscriptions;
-
-    @Enumerated(EnumType.ORDINAL)
-    @Column(name = "global_permission", nullable = false)
-    private Permission globalPermission;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private Set<UserPermission> permissions;
@@ -69,7 +59,8 @@ public class User {
         this.actions = new HashSet<>();
     }
 
-    public User() {}
+    public User() {
+    }
 
     public Integer getId() {
         return id;
@@ -101,14 +92,6 @@ public class User {
 
     public void setCreationTimestamp(Date creationTimestamp) {
         this.creationTimestamp = creationTimestamp;
-    }
-
-    public Date getUpdateTimestamp() {
-        return updateTimestamp;
-    }
-
-    public void setUpdateTimestamp(Date updateTimestamp) {
-        this.updateTimestamp = updateTimestamp;
     }
 
     public Date getOptOutTimestamp() {
@@ -146,14 +129,6 @@ public class User {
 
     public void removeSubscription(EventSubscription subscription) {
         this.subscriptions.remove(subscription);
-    }
-
-    public Permission getGlobalPermission() {
-        return globalPermission;
-    }
-
-    public void setGlobalPermission(Permission globalPermission) {
-        this.globalPermission = globalPermission;
     }
 
     public Set<UserPermission> getPermissions() {

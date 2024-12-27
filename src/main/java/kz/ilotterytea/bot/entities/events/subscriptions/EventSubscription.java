@@ -3,12 +3,10 @@ package kz.ilotterytea.bot.entities.events.subscriptions;
 import jakarta.persistence.*;
 import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.users.User;
-import org.hibernate.annotations.UuidGenerator;
-
-import java.util.UUID;
 
 /**
  * Entity for event subscription.
+ *
  * @author ilotterytea
  * @version 1.6
  */
@@ -16,9 +14,9 @@ import java.util.UUID;
 @Table(name = "event_subscriptions")
 public class EventSubscription {
     @Id
-    @UuidGenerator
-    @Column(nullable = false, unique = true, updatable = false)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false, updatable = false)
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
@@ -28,9 +26,10 @@ public class EventSubscription {
     @JoinColumn(name = "event_id", nullable = false, updatable = false)
     private Event event;
 
-    public EventSubscription() {}
+    public EventSubscription() {
+    }
 
-    public UUID getId() {
+    public Integer getId() {
         return id;
     }
 

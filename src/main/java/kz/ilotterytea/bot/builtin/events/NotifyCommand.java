@@ -68,10 +68,10 @@ public class NotifyCommand implements Command {
                     LineIds.C_NOTIFY_LIST,
                     events.stream().map(it -> {
                         if (it.getEventType().equals(EventType.CUSTOM)) {
-                            return "\"" + it.getEventName() + "\"";
+                            return "\"" + it.getCustomAliasId() + "\"";
                         }
 
-                        return "\"" + it.getAliasId() + ":" + it.getEventType().getName() + "\"";
+                        return "\"" + it.getTargetAliasId() + ":" + it.getEventType().getName() + "\"";
                     }).collect(Collectors.joining(","))
             ));
         }
@@ -91,10 +91,10 @@ public class NotifyCommand implements Command {
                     LineIds.C_NOTIFY_SUBS,
                     eventSubscriptions.stream().map(it -> {
                         if (it.getEvent().getEventType().equals(EventType.CUSTOM)) {
-                            return "\"" + it.getEvent().getEventName() + "\"";
+                            return "\"" + it.getEvent().getCustomAliasId() + "\"";
                         }
 
-                        return "\"" + it.getEvent().getAliasId() + ":" + it.getEvent().getEventType().getName() + "\"";
+                        return "\"" + it.getEvent().getTargetAliasId() + ":" + it.getEvent().getEventType().getName() + "\"";
                     }).collect(Collectors.joining(","))
             ));
         }
@@ -147,10 +147,10 @@ public class NotifyCommand implements Command {
                 .stream()
                 .filter(it -> {
                     if (eventType == EventType.CUSTOM) {
-                        return it.getEventName().equals(eventName);
+                        return it.getCustomAliasId().equals(eventName);
                     }
 
-                    return it.getAliasId().equals(Integer.parseInt(eventName)) && it.getEventType().equals(eventType);
+                    return it.getTargetAliasId().equals(Integer.parseInt(eventName)) && it.getEventType().equals(eventType);
                 })
                 .findFirst();
 

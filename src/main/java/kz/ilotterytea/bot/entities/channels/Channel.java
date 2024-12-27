@@ -7,7 +7,6 @@ import kz.ilotterytea.bot.entities.Timer;
 import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -15,6 +14,7 @@ import java.util.Set;
 
 /**
  * Channel.
+ *
  * @author ilotterytea
  * @version 1.4
  */
@@ -34,16 +34,11 @@ public class Channel {
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "joined_at", updatable = false, nullable = false)
     private Date creationTimestamp;
 
-    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at", nullable = false)
-    private Date updateTimestamp;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "opt_outed_at")
+    @Column(name = "opted_out_at")
     private Date optOutTimestamp;
 
     @OneToOne(mappedBy = "channel", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
@@ -61,10 +56,6 @@ public class Channel {
     @OneToMany(mappedBy = "channel", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private Set<Timer> timers;
 
-    @Enumerated(EnumType.ORDINAL)
-    @Column(nullable = false)
-    private Set<ChannelFeature> features;
-
     @OneToMany(mappedBy = "channel", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private Set<Action> actions;
 
@@ -74,12 +65,12 @@ public class Channel {
         this.events = new HashSet<>();
         this.commands = new HashSet<>();
         this.permissions = new HashSet<>();
-        this.features = new HashSet<>();
         this.timers = new HashSet<>();
         this.actions = new HashSet<>();
     }
 
-    public Channel() {}
+    public Channel() {
+    }
 
     public Integer getId() {
         return id;
@@ -111,14 +102,6 @@ public class Channel {
 
     public void setCreationTimestamp(Date creationTimestamp) {
         this.creationTimestamp = creationTimestamp;
-    }
-
-    public Date getUpdateTimestamp() {
-        return updateTimestamp;
-    }
-
-    public void setUpdateTimestamp(Date updateTimestamp) {
-        this.updateTimestamp = updateTimestamp;
     }
 
     public Date getOptOutTimestamp() {
@@ -198,22 +181,6 @@ public class Channel {
 
     public void removePermission(UserPermission permission) {
         this.permissions.remove(permission);
-    }
-
-    public Set<ChannelFeature> getFeatures() {
-        return features;
-    }
-
-    public void setFeatures(Set<ChannelFeature> features) {
-        this.features = features;
-    }
-
-    public void addFeature(ChannelFeature feature) {
-        this.features.add(feature);
-    }
-
-    public void removeFeature(ChannelFeature feature) {
-        this.features.remove(feature);
     }
 
     public Set<Timer> getTimers() {

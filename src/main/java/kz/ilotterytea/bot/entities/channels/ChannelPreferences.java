@@ -8,6 +8,7 @@ import java.util.Set;
 
 /**
  * Channel preferences.
+ *
  * @author ilotterytea
  * @version 1.4
  */
@@ -25,13 +26,19 @@ public class ChannelPreferences {
     @Column(nullable = false)
     private String language;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Set<ChannelFeature> features;
+
     public ChannelPreferences(Channel channel) {
         this.channel = channel;
         this.prefix = SharedConstants.TWITCH_DEFAULT_PREFIX;
         this.language = SharedConstants.TWITCH_DEFAULT_LOCALE_ID;
+        this.features = new HashSet<>();
     }
 
-    public ChannelPreferences() {}
+    public ChannelPreferences() {
+    }
 
     public Channel getChannel() {
         return channel;
@@ -55,5 +62,21 @@ public class ChannelPreferences {
 
     public void setLanguage(String language) {
         this.language = language;
+    }
+
+    public Set<ChannelFeature> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(Set<ChannelFeature> features) {
+        this.features = features;
+    }
+
+    public void addFeature(ChannelFeature feature) {
+        this.features.add(feature);
+    }
+
+    public void removeFeature(ChannelFeature feature) {
+        this.features.remove(feature);
     }
 }

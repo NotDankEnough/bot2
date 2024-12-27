@@ -3,14 +3,13 @@ package kz.ilotterytea.bot.entities.events;
 import jakarta.persistence.*;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.events.subscriptions.EventSubscription;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Entity for events.
+ *
  * @author ilotterytea
  * @version 1.6
  */
@@ -18,57 +17,67 @@ import java.util.UUID;
 @Table(name = "events")
 public class Event {
     @Id
-    @UuidGenerator
-    @Column(nullable = false, unique = true, updatable = false)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false, updatable = false)
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "channel_id", updatable = false, nullable = false)
     private Channel channel;
 
-    @Column(name = "alias_id", updatable = false)
-    private Integer aliasId;
+    @Column(name = "target_alias_id", updatable = false)
+    private Integer targetAliasId;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false, updatable = false)
     private EventType eventType;
 
-    @Column(name = "event_name", updatable = false)
-    private String eventName;
+    @Column(name = "custom_alias_id", updatable = false)
+    private String customAliasId;
 
-    @Column(name = "event_message", nullable = false)
-    private String eventMessage;
+    @Column(name = "message", nullable = false)
+    private String message;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Set<EventFlag> flags;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<EventSubscription> subscriptions;
 
-    public Event(Integer aliasId, EventType eventType, String eventName, String eventMessage) {
-        this.aliasId = aliasId;
+    public Event(Integer targetAliasId, EventType eventType, String message) {
+        this.targetAliasId = targetAliasId;
         this.eventType = eventType;
-        this.eventName = eventName;
-        this.eventMessage = eventMessage;
+        this.customAliasId = null;
+        this.message = message;
         this.flags = new HashSet<>();
         this.subscriptions = new HashSet<>();
     }
 
-    public Event() {}
+    public Event(String customAliasId, EventType eventType, String message) {
+        this.targetAliasId = null;
+        this.eventType = eventType;
+        this.customAliasId = customAliasId;
+        this.message = message;
+        this.flags = new HashSet<>();
+        this.subscriptions = new HashSet<>();
+    }
+
+    public Event() {
+    }
 
     @PrePersist
     private void prePersist() {
-        if (eventType != EventType.CUSTOM && aliasId == null) {
-            throw new IllegalStateException("aliasId is required for non-custom events!");
+        if (eventType != EventType.CUSTOM && targetAliasId == null) {
+            throw new IllegalStateException("targetAliasId is required for non-custom events!");
         }
 
-        if (eventType == EventType.CUSTOM && eventName == null) {
-            throw new IllegalStateException("eventName is required for custom events!");
+        if (eventType == EventType.CUSTOM && customAliasId == null) {
+            throw new IllegalStateException("customAliasId is required for custom events!");
         }
     }
 
-    public UUID getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -80,24 +89,24 @@ public class Event {
         this.channel = channel;
     }
 
-    public Integer getAliasId() {
-        return aliasId;
+    public Integer getTargetAliasId() {
+        return targetAliasId;
     }
 
     public EventType getEventType() {
         return eventType;
     }
 
-    public String getEventName() {
-        return eventName;
+    public String getCustomAliasId() {
+        return customAliasId;
     }
 
-    public String getEventMessage() {
-        return eventMessage;
+    public String getMessage() {
+        return message;
     }
 
-    public void setEventMessage(String eventMessage) {
-        this.eventMessage = eventMessage;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public Set<EventFlag> getFlags() {

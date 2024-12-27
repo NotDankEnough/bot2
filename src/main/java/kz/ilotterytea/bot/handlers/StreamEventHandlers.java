@@ -84,7 +84,7 @@ public class StreamEventHandlers {
         final String ANNOUNCEMENT_LINE = BOT.getLocale().formattedText(
                 channel.getPreferences().getLanguage(),
                 LineIds.EVENTS_MESSAGE,
-                event.getEventMessage()
+                event.getMessage()
         );
 
         final Set<String> names = event.getSubscriptions()

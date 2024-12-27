@@ -76,10 +76,8 @@ public class MessageHandlerSamples {
             UserPreferences preferences = new UserPreferences(user);
             user.setPreferences(preferences);
 
-            user.setGlobalPermission(Permission.USER);
-
             UserPermission userPermission = new UserPermission();
-            userPermission.setPermission(Permission.USER);
+            userPermission.setLevel(Permission.USER);
             channel.addPermission(userPermission);
             user.addPermission(userPermission);
 
@@ -89,12 +87,6 @@ public class MessageHandlerSamples {
             user = users.get(0);
         }
 
-        if (user.getGlobalPermission().getValue() == Permission.SUSPENDED.getValue()) {
-            session.getTransaction().commit();
-            session.close();
-            return;
-        }
-
         // Update user's permissions:
         UserPermission userPermission = user.getPermissions()
                 .stream()
@@ -102,27 +94,27 @@ public class MessageHandlerSamples {
                 .findFirst()
                 .orElseGet(() -> {
                     UserPermission permission1 = new UserPermission();
-                    permission1.setPermission(Permission.USER);
+                    permission1.setLevel(Permission.USER);
                     channel.addPermission(permission1);
                     user.addPermission(permission1);
 
                     return permission1;
                 });
 
-        if (userPermission.getPermission().getValue() == Permission.SUSPENDED.getValue()) {
+        if (userPermission.getLevel().getValue() == Permission.SUSPENDED.getValue()) {
             session.getTransaction().commit();
             session.close();
             return;
         }
 
         if (Objects.equals(e.getChannel().getId(), e.getUser().getId())) {
-            userPermission.setPermission(Permission.BROADCASTER);
+            userPermission.setLevel(Permission.BROADCASTER);
         } else if (e.getMessageEvent().getBadges().containsKey("moderator")) {
-            userPermission.setPermission(Permission.MOD);
+            userPermission.setLevel(Permission.MOD);
         } else if (e.getMessageEvent().getBadges().containsKey("vip")) {
-            userPermission.setPermission(Permission.VIP);
+            userPermission.setLevel(Permission.VIP);
         } else {
-            userPermission.setPermission(Permission.USER);
+            userPermission.setLevel(Permission.USER);
         }
 
         session.persist(userPermission);

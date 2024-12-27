@@ -6,6 +6,7 @@ import kz.ilotterytea.bot.entities.users.User;
 
 /**
  * User permission.
+ *
  * @author ilotterytea
  * @version 1.4
  */
@@ -25,11 +26,12 @@ public class UserPermission {
     @JoinColumn(name = "user_id", updatable = false, nullable = false)
     private User user;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Permission permission;
+    private Permission level;
 
-    public UserPermission() {}
+    public UserPermission() {
+    }
 
     public Integer getId() {
         return id;
@@ -55,11 +57,11 @@ public class UserPermission {
         this.user = user;
     }
 
-    public Permission getPermission() {
-        return permission;
+    public Permission getLevel() {
+        return level;
     }
 
-    public void setPermission(Permission permission) {
-        this.permission = permission;
+    public void setLevel(Permission level) {
+        this.level = level;
     }
 }

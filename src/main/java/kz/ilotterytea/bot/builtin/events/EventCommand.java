@@ -68,7 +68,7 @@ public class EventCommand implements Command {
             try {
                 users = Huinyabot.getInstance().getClient().getHelix().getUsers(
                         Huinyabot.getInstance().getCredential().getAccessToken(),
-                        events.stream().filter(it -> it.getAliasId() != null).map(it -> it.getAliasId().toString()).collect(Collectors.toList()),
+                        events.stream().filter(it -> it.getTargetAliasId() != null).map(it -> it.getTargetAliasId().toString()).collect(Collectors.toList()),
                         null
                 ).execute().getUsers();
             } catch (Exception e) {
@@ -87,12 +87,12 @@ public class EventCommand implements Command {
                         channel.getAliasName(),
                         events.stream().map(it -> {
                             if (it.getEventType() == EventType.CUSTOM) {
-                                return it.getEventName();
+                                return it.getCustomAliasId();
                             }
 
                             Optional<com.github.twitch4j.helix.domain.User> optionalUser = users
                                     .stream()
-                                    .filter(u -> u.getId().equals(it.getAliasId().toString()))
+                                    .filter(u -> u.getId().equals(it.getTargetAliasId().toString()))
                                     .findFirst();
 
                             if (optionalUser.isEmpty()) {
@@ -153,11 +153,11 @@ public class EventCommand implements Command {
         Optional<Event> optionalEvent = channel.getEvents()
                 .stream()
                 .filter(it -> {
-                    if (it.getEventType() == EventType.CUSTOM && it.getAliasId() == null) {
-                        return it.getEventName().equals(eventName);
+                    if (it.getEventType() == EventType.CUSTOM && it.getTargetAliasId() == null) {
+                        return it.getCustomAliasId().equals(eventName);
                     }
 
-                    return it.getAliasId().equals(Integer.parseInt(eventName)) && it.getEventType().equals(eventType);
+                    return it.getTargetAliasId().equals(Integer.parseInt(eventName)) && it.getEventType().equals(eventType);
                 })
                 .findFirst();
 
@@ -197,7 +197,7 @@ public class EventCommand implements Command {
             final String ANNOUNCEMENT_LINE = Huinyabot.getInstance().getLocale().formattedText(
                     channel.getPreferences().getLanguage(),
                     LineIds.EVENTS_MESSAGE,
-                    event1.getEventMessage()
+                    event1.getMessage()
             );
 
             Set<String> names = event1.getSubscriptions()
@@ -246,7 +246,7 @@ public class EventCommand implements Command {
         if (subcommandId.equals("on")) {
             if (optionalEvent.isPresent()) {
                 Event event1 = optionalEvent.get();
-                event1.setEventMessage(finalMsg);
+                event1.setMessage(finalMsg);
 
                 session.merge(event1);
 
@@ -260,9 +260,9 @@ public class EventCommand implements Command {
             Event event1;
 
             if (eventType == EventType.CUSTOM) {
-                event1 = new Event(null, eventType, eventName, finalMsg);
+                event1 = new Event(eventName, eventType, finalMsg);
             } else {
-                event1 = new Event(Integer.parseInt(eventName), eventType, null, finalMsg);
+                event1 = new Event(Integer.parseInt(eventName), eventType, finalMsg);
 
                 Huinyabot.getInstance().getClient().getClientHelper().enableStreamEventListener(eventName, targetAndEvent[0]);
             }

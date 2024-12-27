@@ -78,7 +78,7 @@ public class CommandLoader extends ClassLoader {
                 }
             }
 
-            if (request.getUserPermission().getPermission().getValue() < cmd.getPermissions().getValue() || isExecutedRecently) {
+            if (request.getUserPermission().getLevel().getValue() < cmd.getPermissions().getValue() || isExecutedRecently) {
                 request.getSession().close();
                 return Optional.empty();
             }
