@@ -33,6 +33,7 @@ dependencies {
     compileOnly("io.micronaut:micronaut-http-client")
     runtimeOnly("ch.qos.logback:logback-classic")
     testImplementation("io.micronaut:micronaut-http-client")
+    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
 }
 
 test {

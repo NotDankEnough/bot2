@@ -1,5 +1,12 @@
 <head>
-    <title>{{app_name}}</title>
     <link rel="icon" href="/static/img/logo.png">
     <link rel="stylesheet" type="text/css" href="/static/styles/style.css">
+    {{#if is_wiki }}
+        <title>{{page_name}} - wiki - {{app_name}}</title>
+        <link rel="stylesheet" type="text/css" href="/static/styles/wiki-sidebar.css">
+        <link rel="stylesheet" type="text/css" href="/static/styles/wiki-content.css">
+    {{/if}}
+    {{#unless is_wiki}}
+        <title>home - {{app_name}}</title>
+    {{/unless}}
 </head>
