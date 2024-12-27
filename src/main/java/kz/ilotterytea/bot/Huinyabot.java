@@ -68,10 +68,14 @@ public class Huinyabot extends Bot {
 
     @Override
     public void init() {
-        if (SharedConstants.TWITCH_ACCESS_TOKEN == null || SharedConstants.TWITCH_OAUTH2_TOKEN == null) {
-            LOGGER.error("No Twitch access token or Twitch OAuth2 token has been provided!");
-            return;
+        if (SharedConstants.TWITCH_TOKEN == null) {
+            throw new RuntimeException("twitch.token must be set in config.properties!");
         }
+
+        if (SharedConstants.TWITCH_TOKEN.startsWith("oauth:")) {
+            throw new RuntimeException("twitch.token must not start with the prefix 'oauth:'!");
+        }
+
         loader = new CommandLoader();
         i18N = new I18N(StorageUtils.getFilepathsFromResource("/i18n"));
 
@@ -83,7 +87,7 @@ public class Huinyabot extends Bot {
         }
 
         // - - -  T W I T C H  C L I E N T  - - - :
-        credential = new OAuth2Credential("twitch", SharedConstants.TWITCH_OAUTH2_TOKEN);
+        credential = new OAuth2Credential("twitch", "oauth:" + SharedConstants.TWITCH_TOKEN);
 
         client = TwitchClientBuilder.builder()
                 .withChatAccount(credential)

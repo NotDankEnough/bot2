@@ -31,8 +31,7 @@ cd build/libs
 Replace the fields `DATABASE_NAME`, `USERNAME`, `PASSWORD`.
 
 ```properties
-twitch.oauth2_token=oauth:your_token_here
-twitch.access_token=access_token_from_your_twitch_application
+twitch.token=XXXXXXXXXXXXXXXXXXXXXXXX
 hibernate.connection.url=jdbc:postgresql://localhost:5432/DATABASE_NAME
 hibernate.connection.username=DB_USERNAME
 hibernate.connection.password=DB_PASSWORD

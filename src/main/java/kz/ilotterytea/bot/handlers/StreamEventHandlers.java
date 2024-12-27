@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 /**
  * A collection of stream event handlers.
+ *
  * @author ilotterytea
  * @version 1.6
  */
@@ -32,6 +33,7 @@ public class StreamEventHandlers {
 
     /**
      * Handle a stream live event.
+     *
      * @param e event
      */
     public static void handleGoLiveEvent(ChannelGoLiveEvent e) {
@@ -42,6 +44,7 @@ public class StreamEventHandlers {
 
     /**
      * Handle a stream offline event.
+     *
      * @param e event
      */
     public static void handleGoOfflineEvent(ChannelGoOfflineEvent e) {
@@ -52,6 +55,7 @@ public class StreamEventHandlers {
 
     /**
      * Get listenables by alias ID and initialize their subscribers.
+     *
      * @param aliasId Alias ID
      */
     private static List<Event> getEventsByAliasId(String aliasId, EventType eventType) {
@@ -72,8 +76,9 @@ public class StreamEventHandlers {
 
     /**
      * A base method for handling stream events.
+     *
      * @param channel Target channel.
-     * @param event Event.
+     * @param event   Event.
      */
     private static void handleStreamEvent(Channel channel, Event event) {
         final String ANNOUNCEMENT_LINE = BOT.getLocale().formattedText(
@@ -91,7 +96,7 @@ public class StreamEventHandlers {
             try {
                 List<Chatter> chatters = BOT.getClient().getHelix()
                         .getChatters(
-                                SharedConstants.TWITCH_ACCESS_TOKEN,
+                                SharedConstants.TWITCH_TOKEN,
                                 channel.getAliasId().toString(),
                                 BOT.getCredential().getUserId(),
                                 1000,

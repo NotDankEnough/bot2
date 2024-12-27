@@ -207,7 +207,7 @@ public class EventCommand implements Command {
 
             if (event1.getFlags().contains(EventFlag.MASSPING)) {
                 List<Chatter> chatters = Huinyabot.getInstance().getClient().getHelix().getChatters(
-                        SharedConstants.TWITCH_ACCESS_TOKEN,
+                        SharedConstants.TWITCH_TOKEN,
                         channel.getAliasId().toString(),
                         Huinyabot.getInstance().getCredential().getUserId(),
                         1000,

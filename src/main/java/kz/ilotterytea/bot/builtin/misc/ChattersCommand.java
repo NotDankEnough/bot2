@@ -40,7 +40,7 @@ public class ChattersCommand implements Command {
 
         try {
             chatters = Huinyabot.getInstance().getClient().getHelix().getChatters(
-                    SharedConstants.TWITCH_ACCESS_TOKEN,
+                    SharedConstants.TWITCH_TOKEN,
                     request.getChannel().getAliasId().toString(),
                     Huinyabot.getInstance().getCredential().getUserId(),
                     null,

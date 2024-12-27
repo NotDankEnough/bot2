@@ -24,8 +24,7 @@ public class SharedConstants {
 
     public static final String PROPERTIES_PATH = "config.properties";
 
-    public static final String TWITCH_OAUTH2_TOKEN;
-    public static final String TWITCH_ACCESS_TOKEN;
+    public static final String TWITCH_TOKEN;
     public static final String TWITCH_DEFAULT_PREFIX;
     public static final String TWITCH_DEFAULT_LOCALE_ID;
 
@@ -38,8 +37,7 @@ public class SharedConstants {
             throw new RuntimeException(e);
         }
 
-        TWITCH_OAUTH2_TOKEN = properties.getProperty("twitch.oauth2_token", null);
-        TWITCH_ACCESS_TOKEN = properties.getProperty("twitch.access_token", null);
+        TWITCH_TOKEN = properties.getProperty("twitch.token", null);
         TWITCH_DEFAULT_PREFIX = properties.getProperty("twitch.default_prefix", "!");
         TWITCH_DEFAULT_LOCALE_ID = properties.getProperty("twitch.default_locale_id", "en_us");
 
