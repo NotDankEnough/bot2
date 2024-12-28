@@ -81,7 +81,8 @@ public class Huinyabot extends Bot {
         i18N = new I18N(StorageUtils.getFilepathsFromResource("/i18n"));
 
         try {
-            sevenTV = new SevenTVEventAPIClient();
+            LOGGER.info("Connecting to 7TV EventAPI...");
+            sevenTV = SevenTVEventAPIClient.getInstance();
             sevenTV.connectBlocking();
         } catch (URISyntaxException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -183,7 +184,7 @@ public class Huinyabot extends Bot {
                     if (timer.getChannel().getPreferences().getFeatures().contains(ChannelFeature.SILENT_MODE)) {
                         continue;
                     }
-                    
+
                     if (CURRENT_DATE.getTime() - timer.getLastTimeExecuted().getTime() > timer.getIntervalMilliseconds()) {
                         client.getChat().sendMessage(
                                 timer.getChannel().getAliasName(),

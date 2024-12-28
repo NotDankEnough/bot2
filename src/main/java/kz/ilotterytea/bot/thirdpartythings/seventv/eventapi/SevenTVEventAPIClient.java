@@ -1,20 +1,15 @@
 package kz.ilotterytea.bot.thirdpartythings.seventv.eventapi;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.SharedConstants;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.i18n.LineIds;
 import kz.ilotterytea.bot.thirdpartythings.seventv.api.SevenTVAPIClient;
-import kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.SevenTVUser;
 import kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.User;
-import kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.UserConnection;
-import kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.emoteset.EmoteSet;
-import kz.ilotterytea.bot.thirdpartythings.seventv.eventapi.schemas.*;
-import kz.ilotterytea.bot.thirdpartythings.seventv.eventapi.schemas.emoteset.EmoteSetBody;
-import kz.ilotterytea.bot.thirdpartythings.seventv.eventapi.schemas.emoteset.EmoteSetBodyObject;
 import kz.ilotterytea.bot.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.java_websocket.client.WebSocketClient;
@@ -31,223 +26,53 @@ import java.util.*;
  * @since 1.0
  */
 public class SevenTVEventAPIClient extends WebSocketClient {
-    private final Logger LOGGER = LoggerFactory.getLogger(SevenTVEventAPIClient.class.getName());
+    private final Logger log;
+    private final String prefix;
+    private final HashMap<String, String> subscriptions;
 
-    private String sessionId;
-    private boolean tryingToResume = false;
+    private int heartbeatCounter, retryCounter;
 
     private static SevenTVEventAPIClient instance;
 
-    public static SevenTVEventAPIClient getInstance() {
+    public static SevenTVEventAPIClient getInstance() throws URISyntaxException {
+        if (instance == null) instance = new SevenTVEventAPIClient();
         return instance;
     }
 
     public SevenTVEventAPIClient() throws URISyntaxException {
         super(new URI(SharedConstants.STV_EVENTAPI_ENDPOINT_URL));
-
-        instance = this;
+        this.log = LoggerFactory.getLogger(SevenTVEventAPIClient.class.getName());
+        this.prefix = "7TV";
+        this.subscriptions = new HashMap<>();
+        this.heartbeatCounter = 0;
+        this.retryCounter = 0;
     }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        LOGGER.info("Connected to 7TV EventAPI: " + handshakedata.getHttpStatus() + " " + handshakedata.getHttpStatusMessage());
+        log.info("Connected to 7TV EventAPI: {} {}", handshakedata.getHttpStatus(), handshakedata.getHttpStatusMessage());
     }
 
     @Override
     public void onMessage(String message) {
-        Gson gson = new Gson();
-        Payload payload = gson.fromJson(message, Payload.class);
+        JsonObject json = JsonParser.parseString(message).getAsJsonObject();
+        int opCode = json.get("op").getAsInt();
 
-        // Handling 'dispatch' events.
-        // Here while the changes in the emote sets are being processed.
-        if (payload.getOperation() == 0) {
-            final Huinyabot BOT = Huinyabot.getInstance();
-
-            Payload<PayloadData<EmoteSetBody>> emoteSetPayload = gson.fromJson(message, new TypeToken<Payload<PayloadData<EmoteSetBody>>>() {
-            }.getType());
-            EmoteSetBody body = emoteSetPayload.getData().getBody();
-
-            // Getting information about the emote set:
-            EmoteSet emoteSet = SevenTVAPIClient.getEmoteSet(body.getId());
-
-            if (emoteSet == null) {
-                LOGGER.debug("No emotesets for ID " + body.getId() + "! There will be no further processing!");
-                return;
+        try {
+            switch (opCode) {
+                case 0 -> handleDispatchEvent(json.getAsJsonObject("d"));
+                case 1 -> handleHelloEvent();
+                case 2 -> handleHeartbeat();
             }
-
-            // Getting information about the 7tv user:
-            SevenTVUser sevenTVUser = SevenTVAPIClient.getSevenTVUser(emoteSet.getOwner().getId());
-
-            if (sevenTVUser == null || sevenTVUser.getConnections().isEmpty()) {
-                LOGGER.debug("No SevenTV users for ID " + emoteSet.getOwner().getId() + " (or has no connections)! There will be no further processing!");
-                return;
-            }
-
-            // Obtaining a Twitch connection only:
-            Optional<UserConnection> connection = sevenTVUser.getConnections().stream().filter(p -> p.getPlatform().equals("TWITCH")).findFirst();
-
-            if (connection.isEmpty()) {
-                LOGGER.debug("No Twitch connections for SevenTV user ID " + sevenTVUser.getId() + "! There will be no further processing!");
-                return;
-            }
-
-            // Obtaining the target model:
-            Session session = HibernateUtil.getSessionFactory().openSession();
-            List<Channel> channels = session.createQuery("from Channel where aliasId = :aliasId AND optOutTimestamp is null", Channel.class)
-                    .setParameter("aliasId", connection.get().getId())
-                    .getResultList();
-            session.close();
-
-            if (channels.isEmpty()) {
-                LOGGER.debug("No channel for Twitch ID " + connection.get().getId() + "! There will be no further processing!");
-                return;
-            }
-
-            Channel channel = channels.get(0);
-            if (channel.getPreferences().getFeatures().contains(ChannelFeature.SILENT_MODE)) {
-                return;
-            }
-
-            List<String> messages = new ArrayList<>();
-
-            // Handling new emotes:
-            if (body.getPushed() != null) {
-                for (EmoteSetBodyObject object : body.getPushed()) {
-                    messages.add(
-                            BOT.getLocale().formattedText(
-                                    channel.getPreferences().getLanguage(),
-                                    LineIds.NEW_EMOTE_WITH_AUTHOR,
-                                    BOT.getLocale().literalText(
-                                            channel.getPreferences().getLanguage(),
-                                            LineIds.STV
-                                    ),
-                                    body.getActor().getUsername(),
-                                    object.getValue().getName()
-                            )
-                    );
-                }
-            }
-
-            // Handling removed emotes:
-            if (body.getPulled() != null) {
-                System.out.println(body.getPulled());
-                for (EmoteSetBodyObject object : body.getPulled()) {
-                    messages.add(
-                            BOT.getLocale().formattedText(
-                                    channel.getPreferences().getLanguage(),
-                                    LineIds.REMOVED_EMOTE_WITH_AUTHOR,
-                                    BOT.getLocale().literalText(
-                                            channel.getPreferences().getLanguage(),
-                                            LineIds.STV
-                                    ),
-                                    body.getActor().getUsername(),
-                                    object.getOldValue().getName()
-                            )
-                    );
-                }
-            }
-
-            // Handling updated emotes:
-            if (body.getUpdated() != null) {
-                for (EmoteSetBodyObject object : body.getUpdated()) {
-                    messages.add(
-                            BOT.getLocale().formattedText(
-                                    channel.getPreferences().getLanguage(),
-                                    LineIds.UPDATED_EMOTE_WITH_AUTHOR,
-                                    BOT.getLocale().literalText(
-                                            channel.getPreferences().getLanguage(),
-                                            LineIds.STV
-                                    ),
-                                    body.getActor().getUsername(),
-                                    object.getOldValue().getName(),
-                                    object.getValue().getName()
-                            )
-                    );
-                }
-            }
-
-            // Sending the messages:
-            for (String msg : messages) {
-                BOT.getClient().getChat().sendMessage(
-                        connection.get().getUsername(),
-                        msg
-                );
-            }
-        }
-
-        // Handling 'hello' events.
-        // This event is triggered when you connect to the server (I think).
-        // Sending requests to subscribe changes of channel emotes from the database.
-        else if (payload.getOperation() == 1) {
-            handleHelloEvent(message);
-        }
-
-        // Handling 'heartbeat' events.
-        else if (payload.getOperation() == 2) {
-            LOGGER.debug("Received the heartbeat event!");
-        }
-
-        // Handling 'acknowledge' events.
-        else if (payload.getOperation() == 5) {
-            Payload<AcknowledgeData> ackPayload = gson.fromJson(message, new TypeToken<Payload<AcknowledgeData>>() {
-            }.getType());
-
-            String command = ackPayload.getData().getCommand();
-
-            if (Objects.equals(command, "SUBSCRIBE")) {
-                LOGGER.debug("Successfully subscribed!");
-            } else if (Objects.equals(command, "RESUME") && tryingToResume) {
-                Payload<AcknowledgeData<ResumeData>> acknowledgeDataPayload = gson.fromJson(message, new TypeToken<Payload<AcknowledgeData<ResumeData>>>() {
-                }.getType());
-                if (acknowledgeDataPayload.getData().getData().getSuccess()) {
-                    LOGGER.debug("Successfully resumed the session!");
-                    tryingToResume = false;
-                } else {
-                    LOGGER.debug("Can't resume the session! Maybe, session ID is invalid...");
-                    tryingToResume = false;
-                    sessionId = null;
-
-                    handleHelloEvent(message);
-                }
-            }
-        }
-
-        // Handling other events.
-        else {
-            LOGGER.debug(String.format(
-                    "Received the event (%s), but no handler found for it: %s",
-                    payload.getOperation(),
-                    message
-            ));
+        } catch (Exception e) {
+            log.error("An exception occurred while processing a 7TV event", e);
         }
     }
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        LOGGER.debug("7TV closed the connection! Reason: " + code + " " + reason + " (Remote: " + remote + ").");
-
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                LOGGER.debug("Trying to reconnect to 7TV...");
-                try {
-                    reconnectBlocking();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                if (isOpen()) {
-                    LOGGER.debug("Successfully reconnected to 7TV!");
-                    if (!resumeSession()) {
-                        handleHelloEvent("{\"op\": 2, \"d\": null}");
-                    }
-
-                    super.cancel();
-                } else {
-                    LOGGER.debug("Couldn't reconnect to 7TV!");
-                }
-            }
-        }, 300000, 300000);
+        log.debug("Connection with 7TV EventAPI has been closed! Reason: {} {}.", code, reason);
+        handleCloseEvent(code, reason);
     }
 
     @Override
@@ -255,67 +80,221 @@ public class SevenTVEventAPIClient extends WebSocketClient {
         throw new RuntimeException(ex);
     }
 
-    private boolean resumeSession() {
-        if (sessionId == null) {
-            LOGGER.debug("Can't resume because sessionId is null!");
-            return false;
-        }
-
-        HashMap<String, String> map = new HashMap<>();
-        map.put("session_id", sessionId);
-
-        Payload<HashMap<String, String>> payload = new Payload<>(
-                34,
-                map
-        );
-
-        super.send(new Gson().toJson(payload));
-
-        tryingToResume = true;
-        return true;
-    }
-
-    public boolean joinChannel(Integer aliasId) {
-        User stvUser = SevenTVAPIClient.getUser(aliasId);
-
-        if (stvUser != null) {
-            String json = new Gson().toJson(
-                    new Payload<>(
-                            35,
-                            new PayloadData<>(
-                                    "emote_set.update",
-                                    new ConditionData(stvUser.getEmoteSet().getId())
-                            )
-                    )
-            );
-
-            super.send(json);
-            return true;
+    private void handleDispatchEvent(JsonObject data) {
+        if (data.get("type").getAsString().equals("emote_set.update")) {
+            handleEmoteSetUpdate(data.getAsJsonObject("body"));
         } else {
-            return false;
+            log.warn("\"emote_set.update\" events are only supported for now.");
         }
     }
 
-    private void handleHelloEvent(String message) {
-        Gson gson = new Gson();
+    private void handleEmoteSetUpdate(JsonObject body) {
+        // Getting source
+        String emoteSetId = body.get("id").getAsString();
+        String aliasId = null;
 
-        Payload payload = gson.fromJson(message, Payload.class);
+        for (Map.Entry<String, String> entry : this.subscriptions.entrySet()) {
+            if (entry.getValue().equals(emoteSetId)) {
+                aliasId = entry.getKey();
+                break;
+            }
+        }
 
-        if (payload.getOperation() == 1) {
-            Payload<HelloData> helloDataPayload = gson.fromJson(message, new TypeToken<Payload<HelloData>>() {
-            }.getType());
-            sessionId = helloDataPayload.getData().getSessionId();
+        if (aliasId == null) {
+            log.warn("Received an event for emote set ID {}, but cannot find relative alias ID", emoteSetId);
+            return;
         }
 
         Session session = HibernateUtil.getSessionFactory().openSession();
-        List<Channel> channels = session.createQuery("from Channel where optOutTimestamp is null", Channel.class)
-                .getResultList();
+        Channel channel = session.createQuery("from Channel where aliasId = :aliasId AND optOutTimestamp is null", Channel.class)
+                .setParameter("aliasId", aliasId)
+                .getSingleResult();
         session.close();
 
-        for (Channel channel : channels) {
-            if (!joinChannel(channel.getAliasId())) {
-                LOGGER.debug("Couldn't find the 7TV userdata for alias ID " + channel.getAliasId());
+        if (channel.getPreferences().getFeatures().contains(ChannelFeature.SILENT_MODE)) {
+            log.warn("Received an event for emote set ID {}, but the channel ID {} is in silent mode", emoteSetId, channel.getId());
+            return;
+        }
+
+        // Getting the actor
+        String actorName = body.getAsJsonObject("actor").get("username").getAsString();
+
+        // Getting the emotes
+        Huinyabot bot = Huinyabot.getInstance();
+        ArrayList<String> messages = new ArrayList<>();
+
+        if (body.has("pulled")) {
+            for (JsonElement element : body.getAsJsonArray("pulled").asList()) {
+                JsonObject emote = element.getAsJsonObject();
+                String oldName = emote.getAsJsonObject("old_value").get("name").getAsString();
+                messages.add(bot.getLocale()
+                        .formattedText(channel.getPreferences().getLanguage(),
+                                LineIds.REMOVED_EMOTE_WITH_AUTHOR,
+                                this.prefix,
+                                actorName,
+                                oldName
+                        )
+                );
             }
         }
+
+        if (body.has("pushed")) {
+            for (JsonElement element : body.getAsJsonArray("pushed").asList()) {
+                JsonObject emote = element.getAsJsonObject();
+                String name = emote.getAsJsonObject("value").get("name").getAsString();
+                messages.add(bot.getLocale()
+                        .formattedText(channel.getPreferences().getLanguage(),
+                                LineIds.NEW_EMOTE_WITH_AUTHOR,
+                                this.prefix,
+                                actorName,
+                                name
+                        )
+                );
+            }
+        }
+
+        if (body.has("updated")) {
+            for (JsonElement element : body.getAsJsonArray("updated").asList()) {
+                JsonObject emote = element.getAsJsonObject();
+                String oldName = emote.getAsJsonObject("old_value").get("name").getAsString();
+                String name = emote.getAsJsonObject("value").get("name").getAsString();
+                messages.add(bot.getLocale()
+                        .formattedText(channel.getPreferences().getLanguage(),
+                                LineIds.UPDATED_EMOTE_WITH_AUTHOR,
+                                this.prefix,
+                                actorName,
+                                oldName,
+                                name
+                        )
+                );
+            }
+        }
+
+        // Sending notifications
+        for (String message : messages) {
+            bot.getClient().getChat().sendMessage(channel.getAliasName(), message);
+        }
+    }
+
+    private void handleHelloEvent() {
+        log.info("7TV EventAPI has greeted me. Starting to subscribe...");
+        subscribeToChannels();
+    }
+
+    private void handleHeartbeat() {
+        heartbeatCounter++;
+
+        // Check subscriptions every 3 heartbeats
+        if (heartbeatCounter % 3 == 0) subscribeToChannels();
+    }
+
+    private void handleCloseEvent(int code, String message) {
+        log.info("Closing the 7TV EventAPI connection... Reason: {} {}", code, message);
+
+        if (retryCounter != 0) {
+            log.info("The reconnection task wasn't run because the retry counter wasn't reset to zero.");
+            return;
+        }
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                retryCounter++;
+
+                if (retryCounter > 4) {
+                    log.info("Retry limit has been exceeded! Cancelling the reconnection task...");
+                    retryCounter = 0;
+                    super.cancel();
+                    return;
+                }
+
+                log.info("Reconnecting to 7TV EventAPI...");
+
+                try {
+                    if (reconnectBlocking()) {
+                        log.info("Successfully reconnected to 7TV EventAPI!");
+                        retryCounter = 0;
+                        heartbeatCounter = 0;
+                        subscriptions.clear();
+                        super.cancel();
+                    } else {
+                        log.info("Failed to reconnect to 7TV EventAPI! Retrying...");
+                    }
+                } catch (Exception e) {
+                    log.error("An exception occurred while reconnecting to 7TV", e);
+                }
+            }
+        }, 300000, 300000);
+    }
+
+    private void subscribeToChannels() {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<Channel> channels = session.createQuery("from Channel where optOutTimestamp is null", Channel.class).getResultList();
+        session.close();
+
+        channels = channels.stream().filter((x) -> {
+            Set<ChannelFeature> features = x.getPreferences().getFeatures();
+            return features.contains(ChannelFeature.NOTIFY_7TV) && !features.contains(ChannelFeature.SILENT_MODE);
+        }).toList();
+
+        // Adding new channels
+        for (Channel channel : channels) {
+            if (subscribeEmoteSet(channel.getAliasId().toString())) {
+                log.info("Subscribing to channel alias ID {} events...", channel.getAliasId());
+            }
+        }
+
+        // Removing old channels
+        for (String userId : this.subscriptions.keySet()) {
+            if (channels.stream().anyMatch((x) -> x.getAliasId().toString().equals(userId))) {
+                continue;
+            }
+
+            if (unSubscribeEmoteSet(userId)) {
+                log.info("Unsubscribing from alias ID {} events...", userId);
+            }
+        }
+    }
+
+    private boolean subscribeEmoteSet(String userId) {
+        if (this.subscriptions.containsKey(userId)) return false;
+        User user = SevenTVAPIClient.getUser(userId);
+
+        if (user == null) return false;
+
+        this.send(String.format("""
+                {
+                    "op": 35,
+                    "d": {
+                        "type": "emote_set.update",
+                        "condition": {
+                            "object_id": "%s"
+                        }
+                    }
+                }""", user.getEmoteSetId()));
+
+        this.subscriptions.put(userId, user.getEmoteSetId());
+        return true;
+    }
+
+    private boolean unSubscribeEmoteSet(String userId) {
+        if (!this.subscriptions.containsKey(userId)) return false;
+        User user = SevenTVAPIClient.getUser(userId);
+
+        if (user == null) return false;
+
+        this.send(String.format("""
+                {
+                    "op": 36,
+                    "d": {
+                        "type": "emote_set.update",
+                        "condition": {
+                            "object_id": "%s"
+                        }
+                    }
+                }""", user.getEmoteSetId()));
+
+        this.subscriptions.remove(userId);
+        return true;
     }
 }

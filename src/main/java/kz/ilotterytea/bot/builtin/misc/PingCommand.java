@@ -32,7 +32,7 @@ public class PingCommand implements Command {
     }
 
     @Override
-    public Response run(Request request) {
+    public Response run(Request request) throws Exception {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
 
         String ut = StringUtils.formatTimestamp(uptime / 1000);
