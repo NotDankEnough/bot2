@@ -74,8 +74,8 @@ public class EmoteSetSimilarityCommand implements Command {
         com.github.twitch4j.helix.domain.User targetUser = userList.stream().filter(p -> p.getLogin().equals(targetChannel)).findFirst().get();
 
         // Getting emote sets:
-        kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.User originSTVUser = SevenTVAPIClient.getUser(Integer.parseInt(originUser.getId()));
-        kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.User targetSTVUser = SevenTVAPIClient.getUser(Integer.parseInt(targetUser.getId()));
+        kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.User originSTVUser = SevenTVAPIClient.getUser(originUser.getId());
+        kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.User targetSTVUser = SevenTVAPIClient.getUser(targetUser.getId());
 
         if (originSTVUser == null || targetSTVUser == null) {
             throw CommandException.notFound(request, originChannel + " | " + targetChannel);

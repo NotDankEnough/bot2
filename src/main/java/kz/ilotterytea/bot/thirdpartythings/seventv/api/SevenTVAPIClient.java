@@ -20,7 +20,7 @@ import java.io.IOException;
 public class SevenTVAPIClient {
     private static final Logger logger = LoggerFactory.getLogger(SevenTVAPIClient.class.getSimpleName());
 
-    public static User getUser(Integer userId) {
+    public static User getUser(String userId) {
         OkHttpClient client = new OkHttpClient.Builder().build();
         Request request = new Request.Builder()
                 .get()
