@@ -169,8 +169,8 @@ public class EventCommand implements Command {
             Event event1 = optionalEvent.get();
 
             if (!event1.getEventType().equals(EventType.CUSTOM)) {
-                List<Event> events = session.createQuery("from Event where aliasId = :aliasId AND channel != :channel", Event.class)
-                        .setParameter("aliasId", eventName)
+                List<Event> events = session.createQuery("from Event where targetAliasId = :targetAliasId AND channel != :channel", Event.class)
+                        .setParameter("targetAliasId", eventName)
                         .setParameter("channel", channel)
                         .getResultList();
 
