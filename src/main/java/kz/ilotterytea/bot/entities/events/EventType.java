@@ -4,6 +4,7 @@ import java.util.Optional;
 
 /**
  * Types for event.
+ *
  * @author ilotterytea
  * @version 1.6
  */
@@ -11,26 +12,32 @@ public enum EventType {
     /**
      * Custom event type.
      */
-    CUSTOM("custom"),
+    CUSTOM("custom", 99),
 
     /**
      * "Stream live" event type.
      */
-    LIVE("live"),
+    LIVE("live", 0),
 
     /**
      * "Stream offline" event type.
      */
-    OFFLINE("offline");
+    OFFLINE("offline", 1);
 
     private final String name;
+    private final Integer id;
 
-    EventType(String name) {
+    EventType(String name, Integer id) {
         this.name = name;
+        this.id = id;
     }
 
     public String getName() {
         return name;
+    }
+
+    public Integer getId() {
+        return id;
     }
 
     public static Optional<EventType> findEventTypeById(String id) {
