@@ -11,6 +11,7 @@ The `!event` command gives broadcasters the ability to manage events for streams
 + offline
 + title
 + category
++ github *(Placeholders: `%{sha}` - Commit SHA, `%{author}` - Commit author, `%{message}` - Commit message)*
 + custom
 
 ## Event flags
@@ -63,6 +64,7 @@ The `!event` command gives broadcasters the ability to manage events for streams
 ### Creating a new event
 
 + `!event on forsen:live forsen live!`
++ `!event on nymnion/forsen:github %{author} made a new commit (%{sha}): %{message}`
 
 ### Deleting the event
 
@@ -97,6 +99,7 @@ The `!event` command gives broadcasters the ability to manage events for streams
 ### Calling the event
 
 + `⚡ forsen live!`
++ `⚡ nymnion made a new commit (v12ulu1): fixed typo`
 
 ## Important notes
 

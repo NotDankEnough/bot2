@@ -68,11 +68,11 @@ public class Event {
 
     @PrePersist
     private void prePersist() {
-        if (eventType != EventType.CUSTOM && targetAliasId == null) {
+        if (eventType.getId() < EventType.GITHUB.getId() && targetAliasId == null) {
             throw new IllegalStateException("targetAliasId is required for non-custom events!");
         }
 
-        if (eventType == EventType.CUSTOM && customAliasId == null) {
+        if (eventType.getId() >= EventType.GITHUB.getId() && customAliasId == null) {
             throw new IllegalStateException("customAliasId is required for custom events!");
         }
     }

@@ -22,7 +22,8 @@ public enum EventType {
     /**
      * "Stream offline" event type.
      */
-    OFFLINE("offline", 1);
+    OFFLINE("offline", 1),
+    GITHUB("github", 20);
 
     private final String name;
     private final Integer id;

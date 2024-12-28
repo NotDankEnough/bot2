@@ -8,6 +8,7 @@ import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import com.github.twitch4j.helix.domain.User;
 import kz.ilotterytea.bot.api.commands.CommandLoader;
+import kz.ilotterytea.bot.clients.GithubListenerClient;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
@@ -145,7 +146,7 @@ public class Huinyabot extends Bot {
         }
 
         // Obtaining to stream events:
-        List<Event> streamEvents = session.createQuery("from Event where eventType > CUSTOM AND eventType <= OFFLINE", Event.class).getResultList();
+        List<Event> streamEvents = session.createQuery("from Event where eventType = LIVE or eventType = OFFLINE", Event.class).getResultList();
 
         if (!streamEvents.isEmpty()) {
             Set<Integer> eventIds = new HashSet<>();
@@ -200,6 +201,9 @@ public class Huinyabot extends Bot {
                 session1.close();
             }
         }, 2500, 2500);
+
+        GithubListenerClient githubListenerClient = new GithubListenerClient();
+        githubListenerClient.run();
 
         client.getEventManager().onEvent(ChannelMessageEvent.class, MessageHandlerSamples::channelMessageEvent);
 
