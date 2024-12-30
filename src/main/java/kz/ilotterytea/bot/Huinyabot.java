@@ -1,5 +1,9 @@
 package kz.ilotterytea.bot;
 
+import com.github.ilotterytea.emotes4j.seventv.SevenTVEventClient;
+import com.github.ilotterytea.emotes4j.seventv.events.EmoteSetUpdateEvent;
+import com.github.ilotterytea.emotes4j.seventv.events.HeartbeatEvent;
+import com.github.ilotterytea.emotes4j.seventv.events.HelloEvent;
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.TwitchClientBuilder;
@@ -13,17 +17,16 @@ import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
 import kz.ilotterytea.bot.entities.events.Event;
+import kz.ilotterytea.bot.handlers.EventHandlers;
 import kz.ilotterytea.bot.handlers.MessageHandlerSamples;
 import kz.ilotterytea.bot.handlers.StreamEventHandlers;
 import kz.ilotterytea.bot.i18n.I18N;
-import kz.ilotterytea.bot.thirdpartythings.seventv.eventapi.SevenTVEventAPIClient;
 import kz.ilotterytea.bot.utils.HibernateUtil;
 import kz.ilotterytea.bot.utils.StorageUtils;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,7 +39,7 @@ import java.util.stream.Collectors;
 public class Huinyabot extends Bot {
     private TwitchClient client;
     private CommandLoader loader;
-    private SevenTVEventAPIClient sevenTV;
+    private SevenTVEventClient stvEventClient;
     private OAuth2Credential credential;
     private I18N i18N;
 
@@ -80,14 +83,6 @@ public class Huinyabot extends Bot {
 
         loader = new CommandLoader();
         i18N = new I18N(StorageUtils.getFilepathsFromResource("/i18n"));
-
-        try {
-            LOGGER.info("Connecting to 7TV EventAPI...");
-            sevenTV = SevenTVEventAPIClient.getInstance();
-            sevenTV.connectBlocking();
-        } catch (URISyntaxException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
 
         // - - -  T W I T C H  C L I E N T  - - - :
         credential = new OAuth2Credential("twitch", "oauth:" + SharedConstants.TWITCH_TOKEN);
@@ -210,11 +205,27 @@ public class Huinyabot extends Bot {
         // Handling stream events:
         client.getEventManager().onEvent(ChannelGoLiveEvent.class, StreamEventHandlers::handleGoLiveEvent);
         client.getEventManager().onEvent(ChannelGoOfflineEvent.class, StreamEventHandlers::handleGoOfflineEvent);
+
+        // Setting up 7TV EventAPI
+        try {
+            LOGGER.info("Connecting to 7TV Events...");
+            stvEventClient = new SevenTVEventClient();
+            stvEventClient.getClient().connectBlocking();
+            stvEventClient.getEventManager().onEvent(EmoteSetUpdateEvent.class, EventHandlers::handleEmoteSetUpdate);
+            stvEventClient.getEventManager().onEvent(HeartbeatEvent.class, EventHandlers::handleHeartbeat);
+            stvEventClient.getEventManager().onEvent(HelloEvent.class, EventHandlers::handleHello);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void dispose() {
         client.close();
-        sevenTV.close();
+        stvEventClient.getClient().close();
+    }
+
+    public SevenTVEventClient getSevenTVEventClient() {
+        return stvEventClient;
     }
 }

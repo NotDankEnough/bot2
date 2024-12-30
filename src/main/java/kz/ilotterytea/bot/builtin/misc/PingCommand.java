@@ -6,7 +6,6 @@ import kz.ilotterytea.bot.api.commands.Command;
 import kz.ilotterytea.bot.api.commands.Request;
 import kz.ilotterytea.bot.api.commands.Response;
 import kz.ilotterytea.bot.i18n.LineIds;
-import kz.ilotterytea.bot.thirdpartythings.seventv.eventapi.SevenTVEventAPIClient;
 import kz.ilotterytea.bot.utils.StringUtils;
 import okhttp3.OkHttpClient;
 
@@ -71,7 +70,7 @@ public class PingCommand implements Command {
                 String.valueOf(Math.round(usedMemMb)),
                 String.valueOf(Math.round(totalMemMb)),
                 String.valueOf(Huinyabot.getInstance().getClient().getChat().getLatency()),
-                (SevenTVEventAPIClient.getInstance().isClosed()) ?
+                (Huinyabot.getInstance().getSevenTVEventClient().getClient().isClosed()) ?
                         Huinyabot.getInstance().getLocale().literalText(
                                 request.getChannel().getPreferences().getLanguage(),
                                 LineIds.DISCON

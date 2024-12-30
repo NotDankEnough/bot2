@@ -11,6 +11,8 @@ version '1.5.0'
 
 repositories {
     mavenCentral()
+
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -24,6 +26,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp'
     implementation 'org.hibernate.orm:hibernate-core:6.2.0.Final'
     implementation 'org.postgresql:postgresql:42.7.2'
+    implementation("com.github.ilotterytea:emotes4j:0.1.2")
 
     // Web related dependencies
     annotationProcessor("io.micronaut:micronaut-http-validation")
@@ -42,8 +45,6 @@ test {
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.toVersion("17")
-    targetCompatibility = JavaVersion.toVersion("17")
 }
 
 application {

@@ -1,16 +1,18 @@
 package kz.ilotterytea.bot.builtin.emotes;
 
+import com.github.ilotterytea.emotes4j.seventv.api.SevenTVAPIClient;
+import com.github.ilotterytea.emotes4j.seventv.api.emotes.Emote;
+import com.github.ilotterytea.emotes4j.seventv.api.emotes.EmoteSet;
+import com.github.ilotterytea.emotes4j.seventv.api.users.User;
 import kz.ilotterytea.bot.Huinyabot;
 import kz.ilotterytea.bot.api.commands.*;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.i18n.LineIds;
-import kz.ilotterytea.bot.thirdpartythings.seventv.api.SevenTVAPIClient;
-import kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.emoteset.Emote;
-import kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.emoteset.EmoteSet;
 import kz.ilotterytea.bot.utils.ParsedMessage;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Emote set similarity command.
@@ -74,15 +76,15 @@ public class EmoteSetSimilarityCommand implements Command {
         com.github.twitch4j.helix.domain.User targetUser = userList.stream().filter(p -> p.getLogin().equals(targetChannel)).findFirst().get();
 
         // Getting emote sets:
-        kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.User originSTVUser = SevenTVAPIClient.getUser(originUser.getId());
-        kz.ilotterytea.bot.thirdpartythings.seventv.api.schemas.User targetSTVUser = SevenTVAPIClient.getUser(targetUser.getId());
+        Optional<User> originSTVUser = SevenTVAPIClient.getUser(originUser.getId());
+        Optional<User> targetSTVUser = SevenTVAPIClient.getUser(targetUser.getId());
 
-        if (originSTVUser == null || targetSTVUser == null) {
+        if (originSTVUser.isEmpty() || targetSTVUser.isEmpty()) {
             throw CommandException.notFound(request, originChannel + " | " + targetChannel);
         }
 
-        EmoteSet originEmoteSet = originSTVUser.getEmoteSet();
-        EmoteSet targetEmoteSet = targetSTVUser.getEmoteSet();
+        EmoteSet originEmoteSet = originSTVUser.get().getEmoteSet();
+        EmoteSet targetEmoteSet = targetSTVUser.get().getEmoteSet();
         int similarity = 0;
 
         // Comparing emote set:
