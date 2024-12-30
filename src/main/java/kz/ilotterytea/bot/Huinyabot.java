@@ -1,5 +1,9 @@
 package kz.ilotterytea.bot;
 
+import com.github.ilotterytea.emotes4j.betterttv.BetterTTVEventClient;
+import com.github.ilotterytea.emotes4j.betterttv.events.EmoteCreateEvent;
+import com.github.ilotterytea.emotes4j.betterttv.events.EmoteDeleteEvent;
+import com.github.ilotterytea.emotes4j.betterttv.events.EmoteUpdateEvent;
 import com.github.ilotterytea.emotes4j.seventv.SevenTVEventClient;
 import com.github.ilotterytea.emotes4j.seventv.events.EmoteSetUpdateEvent;
 import com.github.ilotterytea.emotes4j.seventv.events.HeartbeatEvent;
@@ -40,10 +44,11 @@ public class Huinyabot extends Bot {
     private TwitchClient client;
     private CommandLoader loader;
     private SevenTVEventClient stvEventClient;
+    private BetterTTVEventClient betterTTVEventClient;
     private OAuth2Credential credential;
     private I18N i18N;
 
-    private final Logger LOGGER = LoggerFactory.getLogger(Huinyabot.class);
+    private final Logger log = LoggerFactory.getLogger(Huinyabot.class);
 
     public TwitchClient getClient() {
         return client;
@@ -102,7 +107,7 @@ public class Huinyabot extends Bot {
         // Join bot's chat:
         if (credential.getUserName() != null && credential.getUserId() != null) {
             client.getChat().joinChannel(credential.getUserName());
-            LOGGER.debug("Joined to bot's chat room!");
+            log.debug("Joined to bot's chat room!");
 
             // Generate a new channel for bot if it doesn't exist:
             List<Channel> channels = session.createQuery("from Channel where aliasId = :aliasId", Channel.class)
@@ -110,7 +115,7 @@ public class Huinyabot extends Bot {
                     .getResultList();
 
             if (channels.isEmpty()) {
-                LOGGER.debug("The bot doesn't have a channel entry. Creating a new one...");
+                log.debug("The bot doesn't have a channel entry. Creating a new one...");
 
                 Channel channel = new Channel(Integer.parseInt(credential.getUserId()), credential.getUserName());
                 ChannelPreferences preferences = new ChannelPreferences(channel);
@@ -136,7 +141,7 @@ public class Huinyabot extends Bot {
             // Join channel chats:
             for (User twitchChannel : twitchChannels) {
                 client.getChat().joinChannel(twitchChannel.getLogin());
-                LOGGER.debug("Joined to " + twitchChannel.getLogin() + "'s chat room!");
+                log.debug("Joined to " + twitchChannel.getLogin() + "'s chat room!");
             }
         }
 
@@ -160,7 +165,7 @@ public class Huinyabot extends Bot {
             // Listening to stream events:
             for (User listenableUser : listenableUsers) {
                 client.getClientHelper().enableStreamEventListener(listenableUser.getId(), listenableUser.getLogin());
-                LOGGER.debug("Listening for stream events for user " + listenableUser.getLogin());
+                log.debug("Listening for stream events for user " + listenableUser.getLogin());
             }
         }
 
@@ -208,7 +213,7 @@ public class Huinyabot extends Bot {
 
         // Setting up 7TV EventAPI
         try {
-            LOGGER.info("Connecting to 7TV Events...");
+            log.info("Connecting to 7TV Events...");
             stvEventClient = new SevenTVEventClient();
             stvEventClient.getClient().connectBlocking();
             stvEventClient.getEventManager().onEvent(EmoteSetUpdateEvent.class, EventHandlers::handleEmoteSetUpdate);
@@ -217,6 +222,31 @@ public class Huinyabot extends Bot {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        // Setting up BetterTTV Events
+        try {
+            log.info("Connecting to BetterTTV Events...");
+            betterTTVEventClient = new BetterTTVEventClient();
+            betterTTVEventClient.getClient().connectBlocking();
+            betterTTVEventClient.getEventManager().onEvent(EmoteCreateEvent.class, EventHandlers::handleEmoteCreation);
+            betterTTVEventClient.getEventManager().onEvent(EmoteUpdateEvent.class, EventHandlers::handleEmoteUpdate);
+            betterTTVEventClient.getEventManager().onEvent(EmoteDeleteEvent.class, EventHandlers::handleEmoteDeletion);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Update BetterTTV subscribers every minute
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // in case if SOMETHING HAPPENS (nothing ever happens)
+                try {
+                    EventHandlers.subscribeChannels(betterTTVEventClient, ChannelFeature.NOTIFY_BTTV);
+                } catch (Exception e) {
+                    log.error("An exception was thrown while checking new BetterTTV subscribers", e);
+                }
+            }
+        }, 0, 60000);
     }
 
     @Override
@@ -227,5 +257,9 @@ public class Huinyabot extends Bot {
 
     public SevenTVEventClient getSevenTVEventClient() {
         return stvEventClient;
+    }
+
+    public BetterTTVEventClient getBetterTTVEventClient() {
+        return betterTTVEventClient;
     }
 }

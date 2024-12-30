@@ -11,6 +11,7 @@ import java.util.Optional;
  */
 public enum ChannelFeature {
     NOTIFY_7TV("notify_7tv_events"),
+    NOTIFY_BTTV("notify_betterttv_events"),
     SILENT_MODE("silent_mode");
 
     private String id;
