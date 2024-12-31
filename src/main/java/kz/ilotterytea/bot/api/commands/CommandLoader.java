@@ -97,8 +97,32 @@ public class CommandLoader extends ClassLoader {
         return response;
     }
 
-    public Optional<Command> getCommand(String id) {
-        return this.COMMANDS.values().stream().filter(c -> c.getNameId().equals(id) || c.getAliases().contains(id)).findFirst();
+    public Optional<Command> getCommand(String id, String prefix) {
+        String noPrefixId = id.substring(prefix.length());
+        String finalId = id.toLowerCase();
+        return this.COMMANDS.values().stream().filter(c -> {
+            boolean result = false;
+
+            for (String alias : c.getAliases()) {
+                String aliasCopy = alias;
+                String aliasPrefix;
+                if (alias.startsWith("%{np}")) {
+                    aliasCopy = alias.substring(5);
+                    aliasPrefix = "";
+                } else {
+                    aliasPrefix = prefix;
+                }
+                result = (aliasPrefix + aliasCopy).equals(finalId);
+                if (result) break;
+            }
+
+            if (!result) {
+                result = c.getNameId().equals(noPrefixId);
+            }
+
+
+            return result;
+        }).findFirst();
     }
 
     /**

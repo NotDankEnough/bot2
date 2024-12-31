@@ -10,6 +10,7 @@ import java.util.Optional;
 
 /**
  * Parsed message.
+ *
  * @author ilotterytea
  * @version 1.4
  */
@@ -33,26 +34,27 @@ public class ParsedMessage {
 
     /**
      * Split the message into a command, a subcommand, a setting, and the rest of the message.
+     *
      * @param rawMessage Raw message.
-     * @param prefix Command prefix.
+     * @param prefix     Command prefix.
      * @return ParsedMessage if command (or alias) exists, otherwise null.
      */
     public static Optional<ParsedMessage> parse(String rawMessage, String prefix) {
         ArrayList<String> s = new ArrayList<>(List.of(rawMessage.split(" ")));
 
-        if (!s.get(0).startsWith(prefix)) {
-            return Optional.empty();
+        if (s.get(0).startsWith("@")) {
+            s.remove(0);
         }
 
         // Getting the command:
-        String commandId = s.get(0).substring(prefix.length());
+        String commandId = s.get(0);
         s.remove(0);
 
         if (commandId.isBlank()) {
             return Optional.empty();
         }
 
-        Optional<Command> optionalCommand = Huinyabot.getInstance().getLoader().getCommand(commandId);
+        Optional<Command> optionalCommand = Huinyabot.getInstance().getLoader().getCommand(commandId, prefix);
 
         if (optionalCommand.isEmpty()) {
             return Optional.empty();

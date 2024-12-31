@@ -92,7 +92,7 @@ public class CustomCommandControl implements Command {
             // Create a new custom command:
             if (message.getSubcommandId().get().equals("new")) {
                 // Check if a command with the same name already exists:
-                if (optionalCustomCommands.isPresent() || Huinyabot.getInstance().getLoader().getCommand(name).isPresent()) {
+                if (optionalCustomCommands.isPresent() || Huinyabot.getInstance().getLoader().getCommand(name, request.getChannel().getPreferences().getPrefix()).isPresent()) {
                     throw CommandException.namesakeCreation(request, name);
                 }
 
