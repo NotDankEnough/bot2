@@ -128,5 +128,6 @@
   "cmd.event.response.unflag": "Снял флаг \"%s\" с события \"%s\"!",
   "cmd.event.response.flag_not_exists": "Флаг \"%s\" не существует. Доступные флаги: %s",
   "cmd.event.response.not_exists": "Не существует события \"%s\"!",
-  "cmd.chatters": "%s: Список чаттеров: %s"
+  "cmd.chatters": "%s: Список чаттеров: %s",
+  "cmd.screenshot": "%s: Скриншот: %s"
 }

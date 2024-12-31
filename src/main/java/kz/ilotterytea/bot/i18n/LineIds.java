@@ -122,7 +122,9 @@ public enum LineIds {
     C_EVENT_FLAG("cmd.event.response.flag"),
     C_EVENT_UNFLAG("cmd.event.response.flag"),
 
-    C_CHATTERS("cmd.chatters");
+    C_CHATTERS("cmd.chatters"),
+
+    C_SCREENSHOT("cmd.screenshot");
 
     private final String id;
 
