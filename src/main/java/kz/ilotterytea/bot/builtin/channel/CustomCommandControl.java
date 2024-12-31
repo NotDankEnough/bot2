@@ -80,8 +80,8 @@ public class CustomCommandControl implements Command {
         final String name = s.get(0);
         s.remove(0);
 
-        // If the command was run by a broadcaster:
-        if (request.getUserPermission().getLevel().getValue() >= Permission.BROADCASTER.getValue()) {
+        // If the command was run by a moderator:
+        if (request.getUserPermission().getLevel().getValue() >= Permission.MOD.getValue()) {
             Optional<CustomCommand> optionalCustomCommands = channel.getCommands().stream().filter(c -> c.getName().equals(name)).findFirst();
             String response = String.join(" ", s);
 

@@ -33,7 +33,7 @@ public class MasspingCommand implements Command {
 
     @Override
     public Permission getPermissions() {
-        return Permission.BROADCASTER;
+        return Permission.MOD;
     }
 
     @Override
