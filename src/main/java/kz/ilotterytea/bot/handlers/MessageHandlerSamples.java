@@ -103,7 +103,6 @@ public class MessageHandlerSamples {
                 });
 
         if (userPermission.getLevel().getValue() == Permission.SUSPENDED.getValue()) {
-            session.getTransaction().commit();
             session.close();
             return;
         }
@@ -176,7 +175,7 @@ public class MessageHandlerSamples {
                 LOG.error("An error occurred while executing the command {}", request.getMessage().getCommandId(), exception);
             }
 
-            session.getTransaction().commit();
+            if (session.getTransaction().isActive()) session.getTransaction().commit();
             session.close();
             return;
         }
