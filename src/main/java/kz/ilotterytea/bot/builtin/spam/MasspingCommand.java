@@ -77,11 +77,13 @@ public class MasspingCommand implements Command {
             StringBuilder sb = new StringBuilder();
 
             if (new StringBuilder()
+                    .append("\uD83D\uDCE3 ")
+                    .append(msgToAnnounce)
+                    .append(" \u00b7 ")
                     .append(msgs.get(index))
                     .append("@")
                     .append(chatter.getUserLogin())
                     .append(", ")
-                    .append(msgToAnnounce)
                     .length() < 500
             ) {
                 sb.append(msgs.get(index)).append("@").append(chatter.getUserLogin()).append(", ");
@@ -93,6 +95,10 @@ public class MasspingCommand implements Command {
             }
         }
 
-        return Response.ofMultiple(msgs.stream().map((x) -> x + msgToAnnounce).toList());
+        return Response.ofMultiple(msgs.stream().map((x) -> {
+            x = x.trim();
+            if (x.endsWith(",")) x = x.substring(0, x.length() - 1);
+            return "\uD83D\uDCE3 " + msgToAnnounce + " \u00b7 " + x;
+        }).toList());
     }
 }
