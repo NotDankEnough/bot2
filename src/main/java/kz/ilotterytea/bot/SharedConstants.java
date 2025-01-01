@@ -61,6 +61,7 @@ public class SharedConstants {
     public static final String STATS_URL = "https://stats.ilotterytea.kz";
     public static final String PASTEA_URL = "https://paste.ilotterytea.kz";
     public static final String SCREENSHOT_URL = "https://ttours.ilotterytea.kz";
+    public static final String MARKOV_URL = "https://markov.ilotterytea.kz";
 
     public static final String IVR_BASE_API = "https://api.ivr.fi/v2";
     public static final String IVR_USER_ENDPOINT = IVR_BASE_API + "/twitch/user";

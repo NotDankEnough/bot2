@@ -12,7 +12,9 @@ import java.util.Optional;
 public enum ChannelFeature {
     NOTIFY_7TV("notify_7tv_events"),
     NOTIFY_BTTV("notify_betterttv_events"),
-    SILENT_MODE("silent_mode");
+    SILENT_MODE("silent_mode"),
+    MARKOV_RESPONSES("markov_responses"),
+    RANDOM_MARKOV_RESPONSES("random_markov_responses");
 
     private String id;
 
