@@ -5,6 +5,15 @@
 
 The `!set` command gives broadcasters ability to customize the bot as they need it to be more fitted for chat.
 
+## Features
+
++ `notify_7tv_events` - Notify about 7TV updates on the channel.
++ `notify_betterttv_events` - Notify about BetterTTV updates on the channel.
++ `silent_mode` - Makes it so that a bot can no longer talk in chat
++ `markov_responses` - The bot will send a Markov-generated response if you mention it.
++ `random_markov_responses` - The bot will send a Markov-generated response to a random message (also,
+  `markov_responses` must be enabled for this)
+
 ## Syntax
 
 ### Set the bot localization for the chat
@@ -20,6 +29,12 @@ The `!set` command gives broadcasters ability to customize the bot as they need 
 
 + `[characters]` - Characters to be set as a prefix.
 
+### Enable/disable the bot features
+
+`!set feature [feature]`
+
++ `[feature]` - Feature.
+
 ## Usage
 
 ### Setting the bot localization
@@ -32,6 +47,11 @@ The `!set` command gives broadcasters ability to customize the bot as they need 
 + `!set prefix ~`
 + `!set prefix ?!`
 
+### Enabling/disabling the bot features
+
++ `!set feature notify_7tv_events`
++ `!set feature notify_bttv_events`
+
 ## Responses
 
 ### Setting the bot localization
@@ -43,6 +63,11 @@ The `!set` command gives broadcasters ability to customize the bot as they need 
 
 + `Successfully set the chat prefix to "~"`
 + `Successfully set the chat prefix to "?!"`
+
+### Enabling/disabling the bot features
+
++ `The feature "notify_7tv_events" has been enabled for this chat!`
++ `The feature "notify_bttv_events" has been disabled for this chat!`
 
 ## Error handling
 
