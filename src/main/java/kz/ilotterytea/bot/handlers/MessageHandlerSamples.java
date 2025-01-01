@@ -9,6 +9,7 @@ import kz.ilotterytea.bot.entities.CustomCommand;
 import kz.ilotterytea.bot.entities.channels.Channel;
 import kz.ilotterytea.bot.entities.channels.ChannelFeature;
 import kz.ilotterytea.bot.entities.channels.ChannelPreferences;
+import kz.ilotterytea.bot.entities.events.Event;
 import kz.ilotterytea.bot.entities.permissions.Permission;
 import kz.ilotterytea.bot.entities.permissions.UserPermission;
 import kz.ilotterytea.bot.entities.users.UserPreferences;
@@ -30,7 +31,7 @@ import java.util.Optional;
  * @since 1.0
  */
 public class MessageHandlerSamples {
-    private static final Logger LOG = LoggerFactory.getLogger(MessageHandlerSamples.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(MessageHandlerSamples.class.getName());
     private static final Huinyabot bot = Huinyabot.getInstance();
 
     /**
@@ -51,7 +52,7 @@ public class MessageHandlerSamples {
         Channel channel;
 
         if (channels.isEmpty()) {
-            LOG.warn("No channel for alias ID " + e.getChannel().getId() + "! Creating a new one...");
+            log.warn("No channel for alias ID " + e.getChannel().getId() + "! Creating a new one...");
 
             channel = new Channel(Integer.parseInt(e.getChannel().getId()), e.getChannel().getName());
             ChannelPreferences preferences = new ChannelPreferences(channel);
@@ -71,7 +72,7 @@ public class MessageHandlerSamples {
         kz.ilotterytea.bot.entities.users.User user;
 
         if (users.isEmpty()) {
-            LOG.warn("No user for alias ID " + e.getUser().getId() + "! Creating a new one...");
+            log.warn("No user for alias ID " + e.getUser().getId() + "! Creating a new one...");
 
             user = new kz.ilotterytea.bot.entities.users.User(Integer.parseInt(e.getUser().getId()), e.getUser().getName());
             UserPreferences preferences = new UserPreferences(user);
@@ -163,7 +164,7 @@ public class MessageHandlerSamples {
                                 exception.getMessage()
                         )
                 );
-                LOG.info("An error occurred while executing the command {}: {}", request.getMessage().getCommandId(), exception.getMessage());
+                log.info("An error occurred while executing the command {}: {}", request.getMessage().getCommandId(), exception.getMessage());
             } catch (Exception exception) {
                 bot.getClient().getChat().sendMessage(channel.getAliasName(), bot.getLocale()
                         .formattedText(request.getChannel().getPreferences().getLanguage(),
@@ -172,7 +173,7 @@ public class MessageHandlerSamples {
                                 CommandException.somethingWentWrong(request).getMessage()
                         )
                 );
-                LOG.error("An error occurred while executing the command {}", request.getMessage().getCommandId(), exception);
+                log.error("An error occurred while executing the command {}", request.getMessage().getCommandId(), exception);
             }
 
             if (session.getTransaction().isActive()) session.getTransaction().commit();
@@ -193,6 +194,20 @@ public class MessageHandlerSamples {
                         command.getMessage()
                 );
             }
+        }
+
+        // Processing message events
+        List<Event> messageEvents = session.createQuery("from Event where targetAliasId = :targetAliasId AND eventType = MESSAGE", Event.class)
+                .setParameter("targetAliasId", user.getAliasId())
+                .getResultList();
+
+        for (Event messageEvent : messageEvents) {
+            String message = messageEvent.getMessage()
+                    .replace("{message}", msg)
+                    .replace("{channel}", channel.getAliasName())
+                    .replace("{username}", user.getAliasName());
+
+            StreamEventHandlers.handleEvent(messageEvent.getChannel(), messageEvent, message);
         }
 
         session.close();

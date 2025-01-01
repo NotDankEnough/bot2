@@ -39,7 +39,7 @@ public class StreamEventHandlers {
      */
     public static void handleGoLiveEvent(ChannelGoLiveEvent e) {
         for (Event event : getEventsByAliasId(e.getChannel().getId(), EventType.LIVE)) {
-            handleStreamEvent(event.getChannel(), event);
+            handleEvent(event.getChannel(), event, event.getMessage());
         }
     }
 
@@ -50,7 +50,7 @@ public class StreamEventHandlers {
      */
     public static void handleGoOfflineEvent(ChannelGoOfflineEvent e) {
         for (Event event : getEventsByAliasId(e.getChannel().getId(), EventType.OFFLINE)) {
-            handleStreamEvent(event.getChannel(), event);
+            handleEvent(event.getChannel(), event, event.getMessage());
         }
     }
 
@@ -81,15 +81,17 @@ public class StreamEventHandlers {
      * @param channel Target channel.
      * @param event   Event.
      */
-    private static void handleStreamEvent(Channel channel, Event event) {
+    public static void handleEvent(Channel channel, Event event, String message) {
         if (channel.getPreferences().getFeatures().contains(ChannelFeature.SILENT_MODE)) {
             return;
         }
 
+        Hibernate.initialize(event.getSubscriptions());
+
         final String ANNOUNCEMENT_LINE = BOT.getLocale().formattedText(
                 channel.getPreferences().getLanguage(),
                 LineIds.EVENTS_MESSAGE,
-                event.getMessage()
+                message
         );
 
         final Set<String> names = event.getSubscriptions()
