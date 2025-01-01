@@ -88,8 +88,14 @@ public class ViewsController {
         }
 
         Session session = HibernateUtil.getSessionFactory().openSession();
-        List<Channel> internalChannels = session.createQuery("from Channel", Channel.class).getResultList();
+        List<Channel> internalChannels = session.createQuery("SELECT c from Channel c INNER JOIN c.preferences WHERE :feature NOT IN c.preferences.features", Channel.class)
+                .setParameter("feature", ChannelFeature.SILENT_MODE)
+                .getResultList();
         session.close();
+
+        if (internalChannels.isEmpty()) {
+            return HttpResponse.temporaryRedirect(URI.create("/"));
+        }
 
         ArrayList<ChannelCatalogueRecord> channels = new ArrayList<>();
 
@@ -123,6 +129,7 @@ public class ViewsController {
                 "contact_url", SharedConstants.PROPERTIES.getProperty("web.contact.url", "#"),
                 "contact_name", SharedConstants.PROPERTIES.getProperty("web.contact.name", "a frog"),
                 "channels", channels,
+                "joined_channels_count", channels.size(),
                 "title", "channel catalogue"
         ));
     }
