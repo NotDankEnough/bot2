@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+{{> views/partials/head }}
+<body>
+<div class="min-h-screen w-full flex items-center flex-col">
+    <div class="lg:w-1/2 w-full flex-grow flex items-center flex-col">
+        <div class="w-full flex-grow flex flex-col space-y-4">
+            {{> views/partials/header }}
+
+            <!-- Profile info -->
+            <div
+                    class="w-full bg-gray-200 border border-gray-300 flex flex-row p-4"
+            >
+                <img
+                        src="{{ pfp }}"
+                        width="128"
+                        height="128"
+                        alt="no image"
+                        class="border border-gray-500"
+                />
+                <div class="ml-4 flex-grow flex flex-col">
+                    <h1 class="text-4xl font-semibold">About {{ username }}</h1>
+                    <p>{{ description }}</p>
+                </div>
+                <div class="flex flex-col space-y-2">
+                    <p>
+                        <i class="fa-solid fa-star text-green-800"></i>
+                        Joined {{ joined }} ago
+                    </p>
+                    {{#if opted_out}}
+                        <p
+                                class="w-full bg-red-300 border border-red-500 flex justify-around items-center"
+                        >
+                            <i class="fa-solid fa-xmark"></i> Opted out!
+                        </p>
+                    {{/if}}
+                    {{#if silent_mode}}
+                        <p
+                                class="w-full bg-blue-300 border border-blue-500 flex justify-around items-center"
+                        >
+                            <i class="fa-solid fa-moon"></i> Silent mode
+                        </p>
+                    {{/if}}
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div>
+                <!-- Tabs -->
+                <div
+                        class="w-full flex flex-row space-x-2 border-b border-gray-300"
+                >
+                    <button
+                            class="tabLink border border-gray-300 hover:border-gray-400 py-1 px-4"
+                            onclick="open_tab(event, 'events')"
+                            id="defaultTab"
+                    >
+                        Events
+                    </button>
+                    <button
+                            class="tabLink border border-gray-300 hover:border-gray-400 py-1 px-4"
+                            onclick="open_tab(event, 'commands')"
+                    >
+                        Custom commands
+                    </button>
+                    <button
+                            class="tabLink border border-gray-300 hover:border-gray-400 py-1 px-4"
+                            onclick="open_tab(event, 'timers')"
+                    >
+                        Timers
+                    </button>
+                </div>
+
+                <!-- Events -->
+                <div id="events" class="tabContent w-full">
+                    <table class="w-full">
+                        <tr class="text-left border-b border-gray-300">
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Message</th>
+                            <th>Flags</th>
+                            <th>Subscribers</th>
+                        </tr>
+                        {{#each events}}
+                            <tr class="border-b border-gray-300">
+                                <td>{{ name }}</td>
+                                <td>{{ event_type }}</td>
+                                <td>{{ message }}</td>
+                                <td>{{ flags }}</td>
+                                <td>{{ subscribers }}</td>
+                            </tr>
+                        {{/each}}
+                    </table>
+                </div>
+
+                <!-- Custom commands -->
+                <div id="commands" class="tabContent w-full">
+                    <table class="w-full">
+                        <tr class="text-left border-b border-gray-300">
+                            <th>Name</th>
+                            <th>Message</th>
+                            <th>Aliases</th>
+                            <th>Is it a global command?</th>
+                            <th>Is it enabled?</th>
+                        </tr>
+                        {{#each commands}}
+                            <tr class="border-b border-gray-300">
+                                <td>{{ name }}</td>
+                                <td>{{ message }}</td>
+                                <td>{{ aliases }}</td>
+                                <td>{{ is_global }}</td>
+                                <td>{{ is_enabled }}</td>
+                            </tr>
+                        {{/each}}
+                    </table>
+                </div>
+
+                <!-- Timers -->
+                <div id="timers" class="tabContent w-full">
+                    <table class="w-full">
+                        <tr class="text-left border-b border-gray-300">
+                            <th>Name</th>
+                            <th>Message</th>
+                            <th>Interval</th>
+                            <th>Last executed</th>
+                        </tr>
+                        {{#each timers}}
+                            <tr class="border-b border-gray-300">
+                                <td>{{ name }}</td>
+                                <td>{{ message }}</td>
+                                <td>{{ interval }}</td>
+                                <td>{{ last_executed }} ago</td>
+                            </tr>
+                        {{/each}}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{> views/partials/footer }}
+</div>
+</body>
+<script>
+    function open_tab(e, name) {
+      let active =
+        " bg-gradient-to-t from-green-300 hover:from-green-200 to-green-200 hover:to-green-300";
+      let inactive = " bg-gray-200 hover:bg-gray-300";
+
+      // hide all tab contents
+      let tabContents = document.getElementsByClassName("tabContent");
+      for (let i = 0; i < tabContents.length; i++) {
+        tabContents[i].style.display = "none";
+      }
+
+      // remove active tabs
+      let tabLinks = document.getElementsByClassName("tabLink");
+
+      for (let i = 0; i < tabLinks.length; i++) {
+        let str = tabLinks[i].className;
+
+        if (!str.includes(inactive) && !str.includes(active)) {
+          tabLinks[i].className += inactive;
+        }
+
+        tabLinks[i].className = tabLinks[i].className.replace(active, inactive);
+      }
+
+      // show the current tab
+      document.getElementById(name).style.display = "block";
+      e.currentTarget.className += active;
+    }
+    document.getElementById("defaultTab").click();
+</script>
+</html>
